@@ -1,0 +1,8 @@
+*.sw*
+*.env
+notes
+temp*/
+build/
+target/
+node_modules/
+*pnpm-debug.log
