@@ -8,7 +8,7 @@ module.exports = async (deployer, network, accounts) => {
   if (network.includes('develop'))
     await singletons.ERC1820Registry(accounts[0])
   await deployer.deploy(
-    artifacts.require('PToken'),
+    artifacts.require('LKSC'),
     'pToken',
     'pTOK',
     [accounts[0]]
