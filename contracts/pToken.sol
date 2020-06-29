@@ -2,9 +2,9 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
 
-contract PToken is ERC777 {
+contract LKSC is ERC777 {
 
-    address public pNetwork;
+    address public owner;
 
     event Redeem(
         address indexed redeemer,
@@ -20,23 +20,23 @@ contract PToken is ERC777 {
         ERC777(tokenName, tokenSymbol, defaultOperators)
         public
     {
-        pNetwork = _msgSender();
+        owner = _msgSender();
     }
 
-    function changePNetwork(
-        address newPNetwork
+    function changeOwner(
+        address newOwner
     )
         external
     {
         require(
-            _msgSender() == pNetwork,
-            "Only the pNetwork can change the `pNetwork` account!"
+            _msgSender() == owner,
+            "Only the owner can change the `owner` account!"
         );
         require(
             _msgSender() != address(0),
-            "pNetwork cannot be the zero address!"
+            "owner cannot be the zero address!"
         );
-        pNetwork = newPNetwork;
+        owner = newOwner;
     }
 
     function mint(
@@ -60,14 +60,14 @@ contract PToken is ERC777 {
         returns (bool)
     {
         require(
-            _msgSender() == pNetwork,
-            "Only the pNetwork can mint tokens!"
+            _msgSender() == owner,
+            "Only the owner can mint tokens!"
         );
         require(
             recipient != address(0),
             "pToken: Cannot mint to the zero address!"
         );
-        _mint(pNetwork, recipient, value, userData, operatorData);
+        _mint(owner, recipient, value, userData, operatorData);
         return true;
     }
 
