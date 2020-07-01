@@ -1,7 +1,4 @@
 /* eslint-disable no-undef */
-module.exports.shortenEthAddress = _ethAddress =>
-  `${_ethAddress.slice(0, 6)}...${_ethAddress.slice(-4)}`
-
 module.exports.getTokenBalance = (_address, _contractMethods) =>
   _contractMethods
     .balanceOf(_address)

@@ -1,6 +1,6 @@
 {
   "name": "y",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The pToken ERC777 smart-contract & bytecode generator",
   "main": "bytecode-generator.js",
   "scripts": {

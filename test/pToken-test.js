@@ -9,11 +9,10 @@ const {
   assertBurnEvent,
   getTokenBalance,
   assertRedeemEvent,
-  shortenEthAddress,
   assertTransferEvent,
   mintTokensToAccounts,
 } = require('./test-utils')
-const pTokenArtifact = artifacts.require('PToken.sol')
+const artifact = artifacts.require('LKSC.sol')
 
 contract('pToken', ([OWNER, ...accounts]) => {
   let methods
@@ -26,7 +25,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
 
   beforeEach(async () => {
     assert(OWNER !== NON_OWNER)
-    methods = await getContract(web3, pTokenArtifact, CONSTRUCTOR_PARAMS)
+    methods = await getContract(web3, artifact, CONSTRUCTOR_PARAMS)
       .then(prop('methods'))
   })
 
@@ -155,7 +154,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
     }
   })
 
-  it(`'mint()' only ${shortenEthAddress(OWNER)} can mint`, async () => {
+  it('\'mint()\' only \'OWNER\' can mint', async () => {
     const recipient = ZERO_ADDRESS
     const recipientBalanceBefore = await getTokenBalance(recipient, methods)
     assert.strictEqual(recipientBalanceBefore, 0)
@@ -164,7 +163,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
         .mint(recipient, AMOUNT)
         .send({ from: NON_OWNER, gas: GAS_LIMIT })
     } catch (_err) {
-      const expectedError = 'Only the pNetwork can mint tokens'
+      const expectedError = 'Only the owner can mint tokens'
       assert(_err.message.includes(expectedError))
     }
   })
@@ -189,54 +188,54 @@ contract('pToken', ([OWNER, ...accounts]) => {
     assertMintEvent(events.Minted, recipient, OWNER, AMOUNT, data, operatorData)
   })
 
-  it(`${shortenEthAddress(OWNER)} can change 'pNetwork'`, async () => {
-    const newPNetwork = accounts[0]
+  it('\'OWNER\' can change \'owner\' account', async () => {
+    const newOwner = accounts[0]
     const pNetworkBefore = await methods
-      .pNetwork()
+      .owner()
       .call()
     assert.strictEqual(pNetworkBefore, OWNER)
     await methods
-      .changePNetwork(newPNetwork)
+      .changeOwner(newOwner)
       .send({ from: OWNER, gas: GAS_LIMIT })
     const pNetworkAfter = await methods
-      .pNetwork()
+      .owner()
       .call()
     assert(pNetworkAfter !== pNetworkBefore)
-    assert.strictEqual(pNetworkAfter, newPNetwork)
+    assert.strictEqual(pNetworkAfter, newOwner)
   })
 
-  it(`Only ${shortenEthAddress(OWNER)} can change 'pNetwork'`, async () => {
-    const newPNetwork = accounts[0]
+  it('Only \'OWNER\' can change \'owner\'', async () => {
+    const newOwner = accounts[0]
     const pNetworkBefore = await methods
-      .pNetwork()
+      .owner()
       .call()
     assert.strictEqual(pNetworkBefore, OWNER)
-    const expectedError = 'Only the pNetwork can change the `pNetwork` account!'
+    const expectedError = 'Only the owner can change the `owner` account!'
     try {
       await methods
-        .changePNetwork(newPNetwork)
+        .changeOwner(newOwner)
         .send({ from: NON_OWNER, gas: GAS_LIMIT })
     } catch (_err) {
       assert(_err.message.includes(expectedError))
     }
   })
 
-  it('pNetwork cannot be the zero address', async () => {
-    let expectedError = 'pNetwork cannot be the zero address!'
+  it('\'owner\' cannot be the zero address', async () => {
+    let expectedError = 'owner cannot be the zero address!'
     const pNetworkBefore = await methods
-      .pNetwork()
+      .owner()
       .call()
     assert.strictEqual(pNetworkBefore, OWNER)
     try {
       await methods
-        .changePNetwork(ZERO_ADDRESS)
+        .changeOwner(ZERO_ADDRESS)
         .send({ from: OWNER, gas: GAS_LIMIT })
     } catch (_err) {
-      assert(_err.message.contains(expectedError))
+      assert(_err.message.includes(expectedError))
       const pNetworkAfter = await methods
-        .pNetwork()
+        .owner()
         .call()
-      assert.strictEqual(pNetworkAfter !== ZERO_ADDRESS)
+      assert.notStrictEqual(pNetworkAfter, ZERO_ADDRESS)
       assert.strictEqual(pNetworkAfter, pNetworkBefore)
     }
   })
