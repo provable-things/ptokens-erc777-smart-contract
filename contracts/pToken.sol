@@ -33,7 +33,7 @@ contract PToken is ERC777 {
             "Only the pNetwork can change the `pNetwork` account!"
         );
         require(
-            _msgSender() != address(0),
+            newPNetwork != address(0),
             "pNetwork cannot be the zero address!"
         );
         pNetwork = newPNetwork;
