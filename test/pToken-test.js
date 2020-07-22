@@ -232,11 +232,11 @@ contract('pToken', ([OWNER, ...accounts]) => {
         .changePNetwork(ZERO_ADDRESS)
         .send({ from: OWNER, gas: GAS_LIMIT })
     } catch (_err) {
-      assert(_err.message.contains(expectedError))
+      assert(_err.message.includes(expectedError))
       const pNetworkAfter = await methods
         .pNetwork()
         .call()
-      assert.strictEqual(pNetworkAfter !== ZERO_ADDRESS)
+      assert(pNetworkAfter !== ZERO_ADDRESS)
       assert.strictEqual(pNetworkAfter, pNetworkBefore)
     }
   })
