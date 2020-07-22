@@ -1,8 +1,18 @@
 pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
+import "./AbstractOwnable.sol";
+import "./ERC777GSN.sol";
+import "./ERC777WithAdminOperator.sol";
+import "./ERC777OptionalAckOnMint.sol";
 
-contract PToken is ERC777 {
+contract PToken is
+    AbstractOwnable,
+    ERC777,
+    ERC777OptionalAckOnMint,
+    ERC777GSN,
+    ERC777WithAdminOperator
+{
 
     address public pNetwork;
 
@@ -18,9 +28,15 @@ contract PToken is ERC777 {
         address[] memory defaultOperators
     )
         ERC777(tokenName, tokenSymbol, defaultOperators)
+        ERC777GSN(msg.sender, msg.sender)
+        ERC777WithAdminOperator(msg.sender)
         public
     {
         pNetwork = _msgSender();
+    }
+
+    function owner() internal view returns (address) {
+        return pNetwork;
     }
 
     function changePNetwork(
