@@ -1,4 +1,4 @@
-const { has } = require('ramda')
+#!/usr/bin/env node
 const { checkCliArgs } = require('./lib/cli-args')
 const { getByteCode } = require('./lib/bytecode-utils')
 const { getWeb3AndPutInState } = require('./lib/get-web3')
@@ -12,10 +12,6 @@ const main = _ =>
     .then(getArtifactAndPutInState)
     .then(getByteCode)
     .then(console.info)
-    .catch(_err =>
-      has('errMsg', _err)
-        ? console.error(_err.errMsg)
-        : console.error('✘ Unexpected error: ' + _err)
-    )
+    .catch(_err => console.error(_err.message) || process.exit(1))
 
 main()
