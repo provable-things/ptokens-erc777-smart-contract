@@ -9,7 +9,7 @@ const {
 
 const { expect } = require('chai')
 
-const pToken = artifacts.require('pToken')
+const pToken = artifacts.require('PToken.sol')
 const Mock777Recipient = artifacts.require('Mock777Recipient')
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'

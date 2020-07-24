@@ -9,7 +9,7 @@ const {
 
 const { expect } = require('chai')
 
-const pToken = artifacts.require('pToken')
+const pToken = artifacts.require('PToken.sol')
 
 contract('pToken/ERC777WithAdminOperator', function (accounts) {
   const [ owner, inflationOwner, other, ownerAddress, relayerAddress, trustedSigner, feeTarget, adminOperator, other2 ] = accounts

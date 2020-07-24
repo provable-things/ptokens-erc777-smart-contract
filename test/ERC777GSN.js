@@ -18,11 +18,7 @@ const {
 const { GSNDevProvider } = require("@openzeppelin/gsn-provider")
 
 const { expect } = require('chai')
-
-const pToken = artifacts.require('pToken')
-
-// const signer = '0xf2F2a2a92D55772fBF74BE5dA642b5b49aAD4cC9'
-// const signKey = '0x80003046efb4c6f752989dedb8a5aaad0668f999d3e21c2ba9005cc8e480e690'
+const pTokenArtifact = artifacts.require('PToken.sol')
 
 contract('pToken/ERC777GSN', function (accounts) {
   const [ owner, inflationOwner, other, ownerAddress, relayerAddress, trustedSigner, feeTarget, adminOperator, other2 ] = accounts
