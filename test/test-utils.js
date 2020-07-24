@@ -88,3 +88,10 @@ module.exports.assertMintEvent = (
   assert.strictEqual(_event.returnValues.operatorData, _operatorData)
   assert.strictEqual(parseInt(_event.returnValues.amount), _amount)
 }
+
+module.exports.fixSignaturePerEIP155 = _signature => {
+  const bitcoinElectrumWalletMagicNumber = 27
+  return _signature.substring(130, 132) === '00'
+    ? _signature.substring(0, 130) + bitcoinElectrumWalletMagicNumber.toString(16)
+    : _signature.substring(0, 130) + (bitcoinElectrumWalletMagicNumber + 1).toString(16)
+}
