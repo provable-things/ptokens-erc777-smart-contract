@@ -1,0 +1,11 @@
+*.txt
+*.log
+.git
+.exclude
+.gitignore
+.dockerignore
+.node_modules
+test
+scripts
+README.md
+smart-contract-bytecode
