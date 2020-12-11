@@ -26,12 +26,16 @@ function main() {
 	if [[ "$NEW" == "deploy" || "$APK_INSTALL" == "NEW" ]]; then
 		local smart_contract_bytecode
 		smart_contract_bytecode=$FOLDER_SYNC/smart-contract-bytecode
-		[[ ! "$SKIP_SMART_CONTRACT_BYTECODE_GENERATION" == "1" ]] \
-			&& rm -f $smart_contract_bytecode \
-			&& logi "Processing new bytecode..." \
-		  && node bytecode-generator.js $@ > $smart_contract_bytecode \
-		  && logi "New bytecode generated at $smart_contract_bytecode" \
-			|| logi "Skipping smart contract bytecode generation..."
+		if [[ ! "$SKIP_SMART_CONTRACT_BYTECODE_GENERATION" == "1" ]]; then
+			rm -f $smart_contract_bytecode 
+			logi "Processing new bytecode..." 
+		  code=`node bytecode-generator.js $@`
+		  echo "$code" > $smart_contract_bytecode
+		  logi "New bytecode generated at $smart_contract_bytecode"
+		else
+			logi "Skipping smart contract bytecode generation..."
+			touch $smart_contract_bytecode
+		fi
 	fi
 }
 
