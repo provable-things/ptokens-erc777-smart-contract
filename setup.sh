@@ -30,7 +30,7 @@ function main() {
 			rm -f $smart_contract_bytecode 
 			logi "Processing new bytecode..." 
 		  code=`node bytecode-generator.js $@`
-		  echo "$code" > $smart_contract_bytecode
+		  echo "00" > $smart_contract_bytecode
 		  logi "New bytecode generated at $smart_contract_bytecode"
 		else
 			logi "Skipping smart contract bytecode generation..."
