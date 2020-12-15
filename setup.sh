@@ -34,7 +34,7 @@ function main() {
 		  logi "New bytecode generated at $smart_contract_bytecode"
 		else
 			logi "Skipping smart contract bytecode generation..."
-			touch $smart_contract_bytecode
+			echo "null" > $smart_contract_bytecode
 		fi
 	fi
 }
