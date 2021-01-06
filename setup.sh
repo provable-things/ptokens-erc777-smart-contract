@@ -23,18 +23,14 @@ function exit_if_empty() {
 }
 
 function main() {
-	if [[ "$NEW" == "deploy" || "$APK_INSTALL" == "NEW" ]]; then
+	local smart_contract_generator_start
+	smart_contract_generator_start=$FOLDER_SYNC/smart-contract-generator.start
+	if [[ -f "$smart_contract_generator_start" ]]; then
 		local smart_contract_bytecode
 		smart_contract_bytecode=$FOLDER_SYNC/smart-contract-bytecode
-		if [[ ! "$SKIP_SMART_CONTRACT_BYTECODE_GENERATION" == "1" ]]; then
-			rm -f $smart_contract_bytecode 
-			logi "Processing new bytecode..." 
-		  code=`node bytecode-generator.js $@`
-		  logi "New bytecode generated at $smart_contract_bytecode"
-		else
-			logi "Skipping smart contract bytecode generation..."
-		  echo "00" > $smart_contract_bytecode
-		fi
+		logi "Processing new bytecode..." 
+		node bytecode-generator.js "$@" > "$smart_contract_bytecode"
+		logi "New bytecode generated at $smart_contract_bytecode"
 	fi
 }
 
