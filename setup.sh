@@ -22,20 +22,59 @@ function exit_if_empty() {
   [ -z "$1" ] && loge "$2" && exit 1 || :
 }
 
-function main() {
-	local smart_contract_generator_start
-	smart_contract_generator_start=$FOLDER_SYNC/smart-contract-generator.start
-	if [[ -f "$smart_contract_generator_start" ]]; then
-		local smart_contract_bytecode
-		smart_contract_bytecode=$FOLDER_SYNC/smart-contract-bytecode
-		logi "Processing new bytecode..." 
-		node bytecode-generator.js "$@" > "$smart_contract_bytecode"
-		logi "New bytecode generated at $smart_contract_bytecode"
-	fi
+
+function wait_file() {
+  local file
+  local count
+  file=$1
+  count=0
+  while [[ ! -f "$file" ]]; do
+    logd "waiting for $file..."
+    sleep 1;
+    count=$((count + 1))
+    if [[ $count -ge 50 ]]; then
+      loge "Waited too long, aborting..."
+      exit 1
+    fi
+  done
+
+  rm "$file"
+  if [[ $? -eq 0 ]]; then
+  	logd "$file removed"
+  else
+  	loge "Failed to remove $file"
+  fi
 }
 
-exit_if_empty \
-	"$ENV_VERSION" \
-	"Please set ENV_VERSION variable"
+function main() {
+	local smart_contract_generator_start
+	local smart_contract_bytecode
+	smart_contract_generator_start=$FOLDER_SYNC/smart-contract-generator.start
+	smart_contract_bytecode=$FOLDER_SYNC/smart-contract-bytecode
+
+	wait_file "$smart_contract_generator_start"
+
+	if [[ -z "$SKIP_SMART_CONTRACT_BYTECODE_GENERATION" ]]; then
+		logi "Processing new bytecode..." 
+    logd "--token-name="$SMART_CONTRACT_TOKEN_NAME" --token-symbol=$SMART_CONTRACT_NATIVE_SYMBOL --default-operators=$SMART_CONTRACT_DEFAULT_OPERATOR"
+		node bytecode-generator.js \
+      --token-name="$SMART_CONTRACT_TOKEN_NAME" \
+      --token-symbol=$SMART_CONTRACT_NATIVE_SYMBOL \
+      --default-operators=$SMART_CONTRACT_DEFAULT_OPERATOR \
+      > "$smart_contract_bytecode"
+		if [[ $? -eq 0 ]]; then
+			logi "New bytecode generated at $smart_contract_bytecode"
+		else
+			loge "Failed to generate bytecode"
+		fi
+		
+	else
+		logi "Skipping smartcontract bytecode generation..." 
+	fi
+
+	exit 0
+}
+
+exit_if_empty "$ENV_VERSION" "Please set ENV_VERSION variable"
 
 main $@
