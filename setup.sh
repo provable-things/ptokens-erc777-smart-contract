@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/bash
 
 function logd() {
   output=""
@@ -37,13 +37,6 @@ function wait_file() {
       exit 1
     fi
   done
-
-  rm "$file"
-  if [[ $? -eq 0 ]]; then
-  	logd "$file removed"
-  else
-  	loge "Failed to remove $file"
-  fi
 }
 
 function maybe_generate_empty_smartcontract() {
@@ -53,36 +46,48 @@ function maybe_generate_empty_smartcontract() {
   fi
 }
 
-function main() {
-	local smart_contract_generator_start
-	local smart_contract_bytecode
-	smart_contract_generator_start=$FOLDER_SYNC/smart-contract-generator.start
-	smart_contract_bytecode=$FOLDER_SYNC/smart-contract-bytecode
-
-	wait_file "$smart_contract_generator_start"
-
-	if [[ -z "$SKIP_SMART_CONTRACT_BYTECODE_GENERATION" ]]; then
-		logi "Processing new bytecode..." 
-    logd "--token-name="$SMART_CONTRACT_TOKEN_NAME" --token-symbol=$SMART_CONTRACT_NATIVE_SYMBOL --default-operators=$SMART_CONTRACT_DEFAULT_OPERATOR"
-		node bytecode-generator.js \
+generate_bytecode() {
+  # shellcheck disable=SC2086
+  logi "Generating new bytecode"
+  node bytecode-generator.js \
       --token-name="$SMART_CONTRACT_TOKEN_NAME" \
       --token-symbol=$SMART_CONTRACT_NATIVE_SYMBOL \
       --default-operators=$SMART_CONTRACT_DEFAULT_OPERATOR \
       > "$smart_contract_bytecode"
-		if [[ $? -eq 0 ]]; then
-			logi "New bytecode generated at $smart_contract_bytecode"
-		else
-			loge "Failed to generate bytecode"
-		fi
-		
-	else
-    maybe_generate_empty_smartcontract
-		logi "Skipping smartcontract bytecode generation..." 
-	fi
+}
 
-	exit 0
+main() {
+  local smart_contract_generator_start
+  local smart_contract_bytecode
+  local ret_code
+  smart_contract_generator_start=$FOLDER_SYNC/smart-contract-generator.start
+  smart_contract_bytecode=$FOLDER_SYNC/smart-contract-bytecode
+
+  wait_file "$smart_contract_generator_start"
+
+  ret_code=0
+  case $(cat "$smart_contract_generator_start") in
+    new )
+      if generate_bytecode; then
+        logi "New bytecode generated at $smart_contract_bytecode"
+      else
+        loge "Failed to generate bytecode"
+        ret_code=1
+      fi
+      ;;
+    stop )
+      logi "Skipping smart contract bytecode generation..." 
+      ;;
+    * )
+      loge "Invalid command received from setup...aborting!"
+      ret_code=1
+  esac
+
+  rm "$smart_contract_generator_start"
+
+  exit "$ret_code"
 }
 
 exit_if_empty "$ENV_VERSION" "Please set ENV_VERSION variable"
 
-main $@
+main "$@"
