@@ -46,6 +46,13 @@ function wait_file() {
   fi
 }
 
+function maybe_generate_empty_smartcontract() {
+  if [[ ! -f "$smart_contract_bytecode" ]]; then
+    echo "00" > "$smart_contract_bytecode"
+    logi "Empty smart-contract-bytecode generated"
+  fi
+}
+
 function main() {
 	local smart_contract_generator_start
 	local smart_contract_bytecode
@@ -69,6 +76,7 @@ function main() {
 		fi
 		
 	else
+    maybe_generate_empty_smartcontract
 		logi "Skipping smartcontract bytecode generation..." 
 	fi
 
