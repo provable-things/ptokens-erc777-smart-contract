@@ -15,7 +15,7 @@ RUN apk update && \
     npm install && \
     npm install async
 
-FROM provable/ptokens-nodejs-base:1.2-alpine
+FROM provable/ptokens-nodejs-base:1.2-buster-slim
 
 LABEL maintainer="Provable Things Ltd <info@provable.xyz>" \
     description="pTokens erc777 smart contract bytecode generator"
