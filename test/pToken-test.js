@@ -240,4 +240,18 @@ contract('pToken', ([OWNER, ...accounts]) => {
       assert.strictEqual(pNetworkAfter, pNetworkBefore)
     }
   })
+
+  it('Should get redeem fxn call data correctly', async () => {
+    const redeemAddress = '33L5hhKLhcNqN7oHfeW3evYXkr9VxyBRRi'
+    const redeemer = accounts[3]
+    const recipientBalanceBefore = await getTokenBalance(redeemer, methods)
+    assert.strictEqual(recipientBalanceBefore, 0)
+    await mintTokensToAccounts(methods, accounts, AMOUNT, OWNER, GAS_LIMIT)
+    const recipientBalanceAfter = await getTokenBalance(redeemer, methods)
+    assert.strictEqual(recipientBalanceAfter, AMOUNT)
+    const result = await methods.redeem(AMOUNT, redeemAddress).encodeABI()
+    // eslint-disable-next-line max-len
+    const expectedResult = '0x24b76fd500000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
+    assert.strictEqual(result, expectedResult)
+  })
 })
