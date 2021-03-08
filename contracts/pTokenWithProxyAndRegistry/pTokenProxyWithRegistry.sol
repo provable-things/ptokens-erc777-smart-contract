@@ -5,6 +5,12 @@ import "@openzeppelin/contracts/access/roles/MinterRole.sol";
 import "./interfaces/IMinterRegistry.sol";
 
 contract PTokenERC777ProxyWithRegistry is ERC777, MinterRole {
+    event ProxyRedeem(
+        address indexed redeemer,
+        uint256 value,
+        string underlyingAssetRecipient
+    );
+
     IMinterRegistry public minterRegistry;
 
     constructor(
@@ -50,6 +56,30 @@ contract PTokenERC777ProxyWithRegistry is ERC777, MinterRole {
     {
         proxyMint(recipient, value, "", "");
         return true;
+    }
+
+
+
+    function proxyRedeem(
+        uint256 amount,
+        string calldata underlyingAssetRecipient
+    )
+        external
+        returns (bool)
+    {
+        proxyRedeem(amount, "", underlyingAssetRecipient);
+        return true;
+    }
+
+    function proxyRedeem(
+        uint256 amount,
+        bytes memory data,
+        string memory underlyingAssetRecipient
+    )
+        public
+    {
+        _burn(_msgSender(), _msgSender(), amount, data, "");
+        emit ProxyRedeem(msg.sender, amount, underlyingAssetRecipient);
     }
 
     function getProxyAddress() external view returns(address) {

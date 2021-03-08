@@ -4,8 +4,13 @@ import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
 import "@openzeppelin/contracts/access/roles/MinterRole.sol";
 
 contract PTokenERC777Proxy is ERC777, MinterRole {
-    event IsMintedEvent(bool _response);
-    // add ACL logic
+
+    event ProxyRedeem(
+        address indexed redeemer,
+        uint256 value,
+        string underlyingAssetRecipient
+    );
+
     constructor(
         string memory _tokenName,
         string memory _tokenSymbol,
@@ -49,6 +54,31 @@ contract PTokenERC777Proxy is ERC777, MinterRole {
     {
         proxyMint(recipient, value, "", "");
         return true;
+    }
+
+
+   function proxyRedeem(
+        uint256 amount,
+        string calldata underlyingAssetRecipient
+    )
+        external
+        onlyMinter()
+        returns (bool)
+    {
+        proxyRedeem(amount, "", underlyingAssetRecipient);
+        return true;
+    }
+
+    function proxyRedeem(
+        uint256 amount,
+        bytes memory data,
+        string memory underlyingAssetRecipient
+    )
+        onlyMinter()
+        public
+    {
+        _burn(_msgSender(), _msgSender(), amount, data, "");
+        emit ProxyRedeem(msg.sender, amount, underlyingAssetRecipient);
     }
 
     function getProxyAddress() external view returns(address) {
