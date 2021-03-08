@@ -26,6 +26,7 @@ contract MinterRegistry is Ownable {
     )
     external
     onlyOwner() {
+        require(minters[_allowedMinterName] != address(0), "NON_EXISTENT_MINTER");
         delete minters[_allowedMinterName];
     }
 

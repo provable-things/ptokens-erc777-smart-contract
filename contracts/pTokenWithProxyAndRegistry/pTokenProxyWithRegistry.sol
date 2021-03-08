@@ -61,4 +61,10 @@ contract PTokenERC777ProxyWithRegistry is ERC777, MinterRole {
         require(minterAddress != address(0), "MINTER_NOT_ALLOWED");
         _addMinter(minterAddress);
     }
+
+    function renounceMinter(string memory _minterName) public {
+        address minterAddress = minterRegistry.getMinterAddress(_minterName);
+        require(minterAddress == address(0), "MINTER_NOT_ALLOWED");
+        _removeMinter(msg.sender);
+    }
 }

@@ -13,12 +13,14 @@ const {
     shortenEthAddress,
     assertTransferEvent,
     mintTokensToAccounts,
+    getContractWithAddress
   } = require('./test-utils')
   const pTokenArtifact = artifacts.require('PTokenWithProxyAndRegistry.sol')
   const minterRegistryArtifact = artifacts.require('MinterRegistry.sol')
 
   contract('PTokenWithProxyAndRegistry', ([OWNER, ...accounts]) => {
-    let methods, minterRegistryMethods
+    let methods
+    let minterRegistry
     const AMOUNT = 1337
     const GAS_LIMIT = 6e6
     const NON_OWNER = accounts[5]
@@ -28,7 +30,6 @@ const {
     const OPIUM_MINTER = accounts[0]
     const THIRD_MINTER = accounts[1]
     const NON_MINTER = accounts[7]
-    let minterRegistry
     beforeEach(async () => {
       assert(OWNER !== NON_OWNER)
       minterRegistry = await minterRegistryArtifact.new(
@@ -38,11 +39,11 @@ const {
             from: OPIUM_MINTER
           }
         )
-       minterRegistryMethods = await getContract(web3, minterRegistryArtifact, ['opium', OPIUM_MINTER])
-       .then(prop('methods'))
-      console.log('minter registry address: ', minterRegistry.address)
-      methods = await getContract(web3, pTokenArtifact, [...CONSTRUCTOR_PARAMS, minterRegistry.address])
-        .then(prop('methods'))
+      const {contract, address} = await getContractWithAddress(web3, pTokenArtifact, [...CONSTRUCTOR_PARAMS, minterRegistry.address])
+      methods = contract.methods
+      await minterRegistry.addMinterToRegistry('pnetwork', address, {
+          from: OPIUM_MINTER
+      })
     })
 
   
@@ -428,6 +429,36 @@ const {
             const expectedError = 'MINTER_NOT_ALLOWED'
             assert(_err.message.includes(expectedError))
         }
+    })
+
+    it(`'renounceMinter()' cannot be successfully called if minter is still in the MinterRegistry`, async() => {
+        try {
+            await methods
+                .renounceMinter('pnetwork')
+                .send({ from: OWNER, gas: GAS_LIMIT })
+        } catch(_err) {
+            const expectedError = 'MINTER_NOT_ALLOWED'
+            assert(_err.message.includes(expectedError))
+        }
+    })
+
+    it(`'deleteMinterFromRegistry()' cannot be called by non OPIUM_MINTER`, async() => {
+        try {
+            await minterRegistry.deleteMinterFromRegistry('pnetwork', {from: OPIUM_MINTER})
+            await methods
+                .renounceMinter('pnetwork')
+                .send({ from: OWNER, gas: GAS_LIMIT })
+        } catch(_err) {
+            const expectedError = 'MINTER_NOT_ALLOWED'
+            assert(_err.message.includes(expectedError))
+        }
+    })
+
+    it(`'renounceMinter()' can be successfully called if ${shortenEthAddress(OWNER)} deletes minter name from MinterRegistry`, async() => {
+        await minterRegistry.deleteMinterFromRegistry('pnetwork', {from: OPIUM_MINTER})
+        await methods
+            .renounceMinter('pnetwork')
+            .send({ from: OWNER, gas: GAS_LIMIT })
     })
   })
   
