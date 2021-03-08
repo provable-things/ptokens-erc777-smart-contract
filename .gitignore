@@ -6,3 +6,4 @@ build/
 target/
 node_modules/
 *pnpm-debug.log
+.deployment.txt

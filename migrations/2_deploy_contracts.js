@@ -14,3 +14,7 @@ module.exports = async (deployer, network, accounts) => {
     [accounts[0]]
   )
 }
+
+/**
+ * MINE: what is singletons?
+ */
