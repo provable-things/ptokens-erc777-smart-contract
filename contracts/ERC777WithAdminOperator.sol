@@ -1,8 +1,8 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.2;
 
-import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 
-contract ERC777WithAdminOperator is ERC777 {
+contract ERC777WithAdminOperator is ERC777Upgradeable {
 
   address public adminOperator;
 
@@ -28,7 +28,7 @@ contract ERC777WithAdminOperator is ERC777 {
   public
   {
     require(_msgSender() == adminOperator, "caller is not the admin operator");
-    _send(adminOperator, sender, recipient, amount, data, operatorData, false);
+    _send(sender, recipient, amount, data, operatorData, false);
     emit AdminTransferInvoked(adminOperator);
   }
 

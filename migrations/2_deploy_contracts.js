@@ -1,3 +1,4 @@
+const { deployProxy } = require('@openzeppelin/truffle-upgrades');
 const { singletons } = require('@openzeppelin/test-helpers')
 require('@openzeppelin/test-helpers/configure')({
   environment: 'truffle',
@@ -6,7 +7,7 @@ require('@openzeppelin/test-helpers/configure')({
 
 module.exports = async (deployer, network, accounts) => {
   if (network.includes('develop'))
-    await singletons.ERC1820Registry(accounts[0])
+    await deployProxy(singletons.ERC1820Registry(accounts[0]), {deployer, initializer: 'initialize'})
   await deployer.deploy(
     artifacts.require('PToken'),
     'pToken',
@@ -14,7 +15,3 @@ module.exports = async (deployer, network, accounts) => {
     [accounts[0]]
   )
 }
-
-/**
- * MINE: what is singletons?
- */
