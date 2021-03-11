@@ -1,10 +1,9 @@
 /* eslint-disable no-undef */
 const {
   keys,
-  prop
 } = require('ramda')
+const { deployProxy } = require('@openzeppelin/truffle-upgrades')
 const {
-  getContract,
   assertMintEvent,
   assertBurnEvent,
   getTokenBalance,
@@ -13,7 +12,7 @@ const {
   assertTransferEvent,
   mintTokensToAccounts,
 } = require('./test-utils')
-const pTokenArtifact = artifacts.require('PToken.sol')
+const PToken = artifacts.require('PToken')
 
 contract('pToken', ([OWNER, ...accounts]) => {
   let methods
@@ -21,13 +20,12 @@ contract('pToken', ([OWNER, ...accounts]) => {
   const GAS_LIMIT = 6e6
   const NON_OWNER = accounts[5]
   const ASSET_RECIPIENT = 'an address'
-  const CONSTRUCTOR_PARAMS = [ 'pToken', 'pTOK', [ OWNER ] ]
   const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
   beforeEach(async () => {
     assert(OWNER !== NON_OWNER)
-    methods = await getContract(web3, pTokenArtifact, CONSTRUCTOR_PARAMS)
-      .then(prop('methods'))
+    const instance = await deployProxy(PToken, [ 'pToken', 'pTOK', [ OWNER ] ])
+    methods = instance
   })
 
   it('`redeem()` function should burn tokens & emit correct events', async () => {
@@ -40,9 +38,8 @@ contract('pToken', ([OWNER, ...accounts]) => {
     await mintTokensToAccounts(methods, accounts, AMOUNT, OWNER, GAS_LIMIT)
     const recipientBalanceAfter = await getTokenBalance(redeemer, methods)
     assert.strictEqual(recipientBalanceAfter, AMOUNT)
-    const { events } = await methods
-      .redeem(redeemAmount, ASSET_RECIPIENT)
-      .send({ from: redeemer, gas: GAS_LIMIT })
+    const { receipt: { logs } } = await methods
+      .redeem(redeemAmount, ASSET_RECIPIENT, { from: redeemer, gas: GAS_LIMIT })
     const recipientBalanceAfterRedeem = await getTokenBalance(
       redeemer,
       methods
@@ -51,11 +48,11 @@ contract('pToken', ([OWNER, ...accounts]) => {
       parseInt(recipientBalanceAfterRedeem),
       AMOUNT - redeemAmount
     )
-    assert(keys(events).length === expectedNumEvents)
-    assertRedeemEvent(events.Redeem, redeemer, redeemAmount, ASSET_RECIPIENT)
-    assertTransferEvent(events.Transfer, redeemer, ZERO_ADDRESS, redeemAmount)
+    assert(keys(logs).length === expectedNumEvents)
+    assertRedeemEvent(logs, redeemer, redeemAmount, ASSET_RECIPIENT)
+    assertTransferEvent(logs, redeemer, ZERO_ADDRESS, redeemAmount)
     assertBurnEvent(
-      events.Burned,
+      logs,
       redeemer,
       operator,
       redeemAmount,
@@ -73,22 +70,21 @@ contract('pToken', ([OWNER, ...accounts]) => {
     const operatorData = '0xbeef'
     const isOperatorForRedeemer = await methods
       .isOperatorFor(operator, redeemer)
-      .call()
     assert(isOperatorForRedeemer)
     const recipientBalanceBefore = await getTokenBalance(redeemer, methods)
     assert.strictEqual(recipientBalanceBefore, 0)
     await mintTokensToAccounts(methods, accounts, AMOUNT, OWNER, GAS_LIMIT)
     const recipientBalanceAfter = await getTokenBalance(redeemer, methods)
     assert.strictEqual(recipientBalanceAfter, AMOUNT)
-    const { events } = await methods
+    const { receipt: { logs } } = await methods
       .operatorRedeem(
         redeemer,
         redeemAmount,
         data,
         operatorData,
-        ASSET_RECIPIENT
+        ASSET_RECIPIENT,
+        { from: operator, gas: GAS_LIMIT }
       )
-      .send({ from: operator, gas: GAS_LIMIT })
     const recipientBalanceAfterRedeem = await getTokenBalance(
       redeemer,
       methods
@@ -97,11 +93,11 @@ contract('pToken', ([OWNER, ...accounts]) => {
       parseInt(recipientBalanceAfterRedeem),
       AMOUNT - redeemAmount
     )
-    assert.strictEqual(keys(events).length, expectedNumEvents)
-    assertTransferEvent(events.Transfer, redeemer, ZERO_ADDRESS, redeemAmount)
-    assertRedeemEvent(events.Redeem, redeemer, redeemAmount, ASSET_RECIPIENT)
+    assert.strictEqual(keys(logs).length, expectedNumEvents)
+    assertTransferEvent(logs, redeemer, ZERO_ADDRESS, redeemAmount)
+    assertRedeemEvent(logs, redeemer, redeemAmount, ASSET_RECIPIENT)
     assertBurnEvent(
-      events.Burned,
+      logs,
       redeemer,
       operator,
       redeemAmount,
@@ -116,26 +112,24 @@ contract('pToken', ([OWNER, ...accounts]) => {
     const expectedNumEvents = 2
     const recipient = accounts[0]
     const recipientBalanceBefore = await getTokenBalance(recipient, methods)
-    const { events } = await methods
-      .mint(recipient, AMOUNT)
-      .send({
+    const { receipt: { logs } } = await methods
+      .mint(recipient, AMOUNT, {
         from: OWNER,
         gas: GAS_LIMIT
       })
     const recipientBalanceAfter = await getTokenBalance(recipient, methods)
     assert.strictEqual(recipientBalanceBefore, 0)
     assert.strictEqual(recipientBalanceAfter, AMOUNT)
-    assert.strictEqual(keys(events).length, expectedNumEvents)
-    assertTransferEvent(events.Transfer, ZERO_ADDRESS, recipient, AMOUNT)
-    assertMintEvent(events.Minted, recipient, OWNER, AMOUNT, data, operatorData)
+    assert.strictEqual(keys(logs).length, expectedNumEvents)
+    assertTransferEvent(logs, ZERO_ADDRESS, recipient, AMOUNT)
+    assertMintEvent(logs, recipient, OWNER, AMOUNT, data, operatorData)
   })
 
   it('`mint()` w/out data should return true if successful', async () => {
     const recipient = accounts[0]
-    const tx = await methods
+    await methods
       .mint(recipient, AMOUNT)
-      .call()
-    assert.strictEqual(tx, true)
+    // Test will pass if function works
   })
 
   it('`mint()` cannot mint to zero address', async () => {
@@ -144,8 +138,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
     assert.strictEqual(recipientBalanceBefore, 0)
     try {
       await methods
-        .mint(recipient, AMOUNT)
-        .send({
+        .mint(recipient, AMOUNT, {
           from: OWNER,
           gas: GAS_LIMIT
         })
@@ -161,10 +154,9 @@ contract('pToken', ([OWNER, ...accounts]) => {
     assert.strictEqual(recipientBalanceBefore, 0)
     try {
       await methods
-        .mint(recipient, AMOUNT)
-        .send({ from: NON_OWNER, gas: GAS_LIMIT })
+        .mint(recipient, AMOUNT, { from: NON_OWNER, gas: GAS_LIMIT })
     } catch (_err) {
-      const expectedError = 'Only the pNetwork can mint tokens'
+      const expectedError = 'Ownable: caller is not the owner'
       assert(_err.message.includes(expectedError))
     }
   })
@@ -175,32 +167,28 @@ contract('pToken', ([OWNER, ...accounts]) => {
     const operatorData = '0xb33f'
     const recipient = accounts[0]
     const recipientBalanceBefore = await getTokenBalance(recipient, methods)
-    const { events } = await methods
-      .mint(recipient, AMOUNT, data, operatorData)
-      .send({
+    const { receipt: { logs } } = await methods
+      .methods['mint(address,uint256,bytes,bytes)'](recipient, AMOUNT, data, operatorData, {
         from: OWNER,
         gas: GAS_LIMIT,
       })
     const recipientBalanceAfter = await getTokenBalance(recipient, methods)
     assert.strictEqual(recipientBalanceBefore, 0)
     assert.strictEqual(recipientBalanceAfter, AMOUNT)
-    assert.strictEqual(keys(events).length, expectedNumEvents)
-    assertTransferEvent(events.Transfer, ZERO_ADDRESS, recipient, AMOUNT)
-    assertMintEvent(events.Minted, recipient, OWNER, AMOUNT, data, operatorData)
+    assert.strictEqual(keys(logs).length, expectedNumEvents)
+    assertTransferEvent(logs, ZERO_ADDRESS, recipient, AMOUNT)
+    assertMintEvent(logs, recipient, OWNER, AMOUNT, data, operatorData)
   })
 
   it(`${shortenEthAddress(OWNER)} can change 'pNetwork'`, async () => {
     const newPNetwork = accounts[0]
     const pNetworkBefore = await methods
-      .pNetwork()
-      .call()
+      .owner()
     assert.strictEqual(pNetworkBefore, OWNER)
     await methods
-      .changePNetwork(newPNetwork)
-      .send({ from: OWNER, gas: GAS_LIMIT })
+      .transferOwnership(newPNetwork, { from: OWNER, gas: GAS_LIMIT })
     const pNetworkAfter = await methods
-      .pNetwork()
-      .call()
+      .owner()
     assert(pNetworkAfter !== pNetworkBefore)
     assert.strictEqual(pNetworkAfter, newPNetwork)
   })
@@ -208,34 +196,29 @@ contract('pToken', ([OWNER, ...accounts]) => {
   it(`Only ${shortenEthAddress(OWNER)} can change 'pNetwork'`, async () => {
     const newPNetwork = accounts[0]
     const pNetworkBefore = await methods
-      .pNetwork()
-      .call()
+      .owner()
     assert.strictEqual(pNetworkBefore, OWNER)
-    const expectedError = 'Only the pNetwork can change the `pNetwork` account!'
+    const expectedError = 'Ownable: caller is not the owner'
     try {
       await methods
-        .changePNetwork(newPNetwork)
-        .send({ from: NON_OWNER, gas: GAS_LIMIT })
+        .transferOwnership(newPNetwork, { from: NON_OWNER, gas: GAS_LIMIT })
     } catch (_err) {
       assert(_err.message.includes(expectedError))
     }
   })
 
   it('pNetwork cannot be the zero address', async () => {
-    let expectedError = 'pNetwork cannot be the zero address!'
+    let expectedError = 'Ownable: new owner is the zero address'
     const pNetworkBefore = await methods
-      .pNetwork()
-      .call()
+      .owner()
     assert.strictEqual(pNetworkBefore, OWNER)
     try {
       await methods
-        .changePNetwork(ZERO_ADDRESS)
-        .send({ from: OWNER, gas: GAS_LIMIT })
+        .transferOwnership(ZERO_ADDRESS, { from: OWNER, gas: GAS_LIMIT })
     } catch (_err) {
       assert(_err.message.includes(expectedError))
       const pNetworkAfter = await methods
-        .pNetwork()
-        .call()
+        .owner()
       assert(pNetworkAfter !== ZERO_ADDRESS)
       assert.strictEqual(pNetworkAfter, pNetworkBefore)
     }
@@ -249,7 +232,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
     await mintTokensToAccounts(methods, accounts, AMOUNT, OWNER, GAS_LIMIT)
     const recipientBalanceAfter = await getTokenBalance(redeemer, methods)
     assert.strictEqual(recipientBalanceAfter, AMOUNT)
-    const result = await methods.redeem(AMOUNT, redeemAddress).encodeABI()
+    const result = await methods.methods['redeem(uint256,string)'](AMOUNT, redeemAddress).encodeABI()
     // eslint-disable-next-line max-len
     const expectedResult = '0x24b76fd500000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
     assert.strictEqual(result, expectedResult)

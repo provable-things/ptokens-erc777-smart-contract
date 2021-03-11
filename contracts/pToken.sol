@@ -15,8 +15,6 @@ contract PToken is
     ERC777Upgradeable
 {
 
-    address public pNetwork;
-
     event Redeem(
         address indexed redeemer,
         uint256 value,
@@ -30,6 +28,7 @@ contract PToken is
     ) 
         public {
             __ERC777_init(tokenName, tokenSymbol, defaultOperators);
+            __Ownable_init_unchained();
     }
 
     function mint(
@@ -50,12 +49,9 @@ contract PToken is
         bytes memory operatorData
     )
         public
+        onlyOwner
         returns (bool)
     {
-        require(
-            _msgSender() == pNetwork,
-            "Only the pNetwork can mint tokens!"
-        );
         require(
             recipient != address(0),
             "pToken: Cannot mint to the zero address!"

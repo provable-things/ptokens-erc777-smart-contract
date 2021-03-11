@@ -33,7 +33,13 @@ module.exports = {
       gas: 6e6,
       gasPrice: 5e9,
       websockets: true
-    }
+    },
+    fork: {
+      host: '127.0.0.1',
+      port: 8545,
+      network_id: '1',
+      websockets: true
+    },
   },
   compilers: {
     solc: {

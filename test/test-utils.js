@@ -5,7 +5,6 @@ module.exports.shortenEthAddress = _ethAddress =>
 module.exports.getTokenBalance = (_address, _contractMethods) =>
   _contractMethods
     .balanceOf(_address)
-    .call()
     .then(parseInt)
 
 module.exports.getContract = (_web3, _artifact, _constructorParams) =>
@@ -29,64 +28,67 @@ module.exports.mintTokensToAccounts = (
     _accounts
       .map(_account =>
         _methods
-          .mint(_account, _amount)
-          .send({ from: _from, gas: _gas })
+          .mint(_account, _amount, { from: _from, gas: _gas })
       )
   )
 
 module.exports.assertTransferEvent = (
-  _event,
+  logs,
   _from,
   _to,
   _value
 ) => {
-  assert.strictEqual(_event.returnValues.from, _from)
-  assert.strictEqual(_event.returnValues.to, _to)
-  assert.strictEqual(parseInt(_event.returnValues.value), _value)
+  const _event = logs.find(log => log.event === 'Transfer')
+  assert.strictEqual(_event.args.from, _from)
+  assert.strictEqual(_event.args.to, _to)
+  assert.strictEqual(parseInt(_event.args.value), _value)
 }
 
 module.exports.assertRedeemEvent = (
-  _event,
+  logs,
   _redeemer,
   _redeemAmount,
   _assetRecipient,
 ) => {
-  assert.strictEqual(_event.returnValues.redeemer, _redeemer)
-  assert.strictEqual(parseInt(_event.returnValues.value), _redeemAmount)
+  const _event = logs.find(log => log.event === 'Redeem')
+  assert.strictEqual(_event.args.redeemer, _redeemer)
+  assert.strictEqual(parseInt(_event.args.value), _redeemAmount)
   assert.strictEqual(
-    _event.returnValues.underlyingAssetRecipient,
+    _event.args.underlyingAssetRecipient,
     _assetRecipient
   )
 }
 
 module.exports.assertBurnEvent = (
-  _event,
+  logs,
   _redeemer,
   _operator,
   _amount,
   _data,
   _operatorData
 ) => {
-  assert.strictEqual(_event.returnValues.from, _redeemer)
-  assert.strictEqual(_event.returnValues.operator, _operator)
-  assert.strictEqual(parseInt(_event.returnValues.amount), _amount)
-  assert.strictEqual(_event.returnValues.data, _data)
-  assert.strictEqual(_event.returnValues.operatorData, _operatorData)
+  const _event = logs.find(log => log.event === 'Burned')
+  assert.strictEqual(_event.args.from, _redeemer)
+  assert.strictEqual(_event.args.operator, _operator)
+  assert.strictEqual(parseInt(_event.args.amount), _amount)
+  assert.strictEqual(_event.args.data, _data)
+  assert.strictEqual(_event.args.operatorData, _operatorData)
 }
 
 module.exports.assertMintEvent = (
-  _event,
+  logs,
   _recipient,
   _operator,
   _amount,
   _data,
   _operatorData,
 ) => {
-  assert.strictEqual(_event.returnValues.data, _data)
-  assert.strictEqual(_event.returnValues.to, _recipient)
-  assert.strictEqual(_event.returnValues.operator, _operator)
-  assert.strictEqual(_event.returnValues.operatorData, _operatorData)
-  assert.strictEqual(parseInt(_event.returnValues.amount), _amount)
+  const _event = logs.find(log => log.event === 'Minted')
+  assert.strictEqual(_event.args.data, _data)
+  assert.strictEqual(_event.args.to, _recipient)
+  assert.strictEqual(_event.args.operator, _operator)
+  assert.strictEqual(_event.args.operatorData, _operatorData)
+  assert.strictEqual(parseInt(_event.args.amount), _amount)
 }
 
 module.exports.fixSignaturePerEIP155 = _signature => {
