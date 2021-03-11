@@ -1,19 +1,16 @@
 pragma solidity ^0.6.2;
 
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
-// import "./ERC777GSN.sol";
-// import "./ERC777WithAdminOperator.sol";
-// import "./ERC777OptionalAckOnMint.sol";
-
 
 
 contract PToken is
     Initializable,
-    OwnableUpgradeable,
+    AccessControlUpgradeable,
     ERC777Upgradeable
 {
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     event Redeem(
         address indexed redeemer,
@@ -28,7 +25,8 @@ contract PToken is
     ) 
         public {
             __ERC777_init(tokenName, tokenSymbol, defaultOperators);
-            __Ownable_init_unchained();
+             _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+             grantRole(MINTER_ROLE, msg.sender);
     }
 
     function mint(
@@ -48,14 +46,10 @@ contract PToken is
         bytes memory userData,
         bytes memory operatorData
     )
-        public
-        onlyOwner
+        public        
         returns (bool)
     {
-        require(
-            recipient != address(0),
-            "pToken: Cannot mint to the zero address!"
-        );
+        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _mint(recipient, value, userData, operatorData);
         return true;
     }
