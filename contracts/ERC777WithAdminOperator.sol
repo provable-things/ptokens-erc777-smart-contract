@@ -1,17 +1,21 @@
 pragma solidity ^0.6.2;
 
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 
-contract ERC777WithAdminOperator is ERC777Upgradeable {
+contract ERC777WithAdminOperatorUpgreadable is ERC777Upgradeable {
 
   address public adminOperator;
 
   event AdminOperatorChange(address oldOperator, address newOperator);
   event AdminTransferInvoked(address operator);
 
-  constructor(address _adminOperator) public {
-    adminOperator = _adminOperator;
-  }
+  function __ERC777WithAdminOperatorUpgreadable_init(
+    address _adminOperator
+  ) public
+    initializer {
+      adminOperator = _adminOperator;
+    }
 
   /**
  * @dev Similar to {IERC777-operatorSend}.

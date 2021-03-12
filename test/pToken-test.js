@@ -20,6 +20,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
   const AMOUNT = 1337
   const GAS_LIMIT = 6e6
   const NON_OWNER = accounts[5]
+  const ADDED_MINTER = accounts[4]
   const ASSET_RECIPIENT = 'an address'
   const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -180,9 +181,15 @@ contract('pToken', ([OWNER, ...accounts]) => {
     assertMintEvent(logs, recipient, OWNER, AMOUNT, data, operatorData)
   })
 
-  it(`${shortenEthAddress(OWNER)} has 'admin' role`, async () => {
+  it(`${shortenEthAddress(OWNER)} has 'admin' and 'minter' role`, async () => {
     assert.isTrue(await methods
-      .hasRole(web3.utils.asciiToHex('DEFAULT_ADMIN_ROLE'), OWNER, {
+      .hasRole('0x00', OWNER, {
+        from: OWNER,
+        gas: GAS_LIMIT,
+      }))
+    
+    assert.isTrue(await methods
+      .hasMinterRole(OWNER, {
         from: OWNER,
         gas: GAS_LIMIT,
       }))
@@ -190,20 +197,69 @@ contract('pToken', ([OWNER, ...accounts]) => {
 
   it(`${shortenEthAddress(OWNER)} can grant 'minter' role`, async () => {
     assert.isFalse(await methods
-      .hasRole(web3.utils.asciiToHex('MINTER_ROLE'), accounts[4], {
-        from: OWNER,
+      .hasMinterRole(ADDED_MINTER, {
+        from: ADDED_MINTER,
         gas: GAS_LIMIT,
       }))
     await methods
-      .grantRole(web3.utils.asciiToHex('MINTER_ROLE'), accounts[4], {
+      .grantMinterRole(ADDED_MINTER, {
         from: OWNER,
         gas: GAS_LIMIT,
       })
       assert.isTrue(await methods
-        .hasRole(web3.utils.asciiToHex('MINTER_ROLE'), accounts[4], {
-          from: OWNER,
+        .hasMinterRole(ADDED_MINTER, {
+          from: ADDED_MINTER,
           gas: GAS_LIMIT,
         }))
+  })
+
+  it(`${shortenEthAddress(OWNER)} can revoke 'minter' role`, async () => {
+    await methods
+      .grantMinterRole(ADDED_MINTER, {
+        from: OWNER,
+        gas: GAS_LIMIT,
+      })
+      assert.isTrue(await methods
+        .hasMinterRole(ADDED_MINTER, {
+          from: ADDED_MINTER,
+          gas: GAS_LIMIT,
+        }))
+
+    await methods
+      .revokeMinterRole(ADDED_MINTER, {
+        from: OWNER,
+        gas: GAS_LIMIT,
+      })
+
+    assert.isFalse(await methods
+      .hasMinterRole(ADDED_MINTER, {
+        from: ADDED_MINTER,
+        gas: GAS_LIMIT,
+      }))
+  })
+
+  it('newly added minter should be able to mint tokens & emit correct events', async () => {
+    await methods
+    .grantMinterRole(ADDED_MINTER, {
+      from: OWNER,
+      gas: GAS_LIMIT,
+    })
+    const data = null
+    const operatorData = null
+    const expectedNumEvents = 2
+    const recipient = accounts[0]
+    const recipientBalanceBefore = await getTokenBalance(recipient, methods)
+    const { receipt: { logs } } = await methods
+      .mint(recipient, AMOUNT, {
+        from: ADDED_MINTER,
+        gas: GAS_LIMIT
+      })
+    const recipientBalanceAfter = await getTokenBalance(recipient, methods)
+    assert.strictEqual(recipientBalanceBefore, 0)
+    assert.strictEqual(recipientBalanceAfter, AMOUNT)
+    assert.strictEqual(keys(logs).length, expectedNumEvents)
+    assertTransferEvent(logs, ZERO_ADDRESS, recipient, AMOUNT)
+    assertMintEvent(logs, recipient, ADDED_MINTER, AMOUNT, data, operatorData)
   })
 
   // it('Should get redeem fxn call data correctly', async () => {

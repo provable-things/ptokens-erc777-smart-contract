@@ -4,11 +4,15 @@ import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 
+import "./ERC777GSN.sol";
+import "./ERC777WithAdminOperator.sol";
 
 contract PToken is
     Initializable,
     AccessControlUpgradeable,
-    ERC777Upgradeable
+    ERC777Upgradeable,
+    ERC777GSNUpgreadable,
+    ERC777WithAdminOperatorUpgreadable
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -25,8 +29,10 @@ contract PToken is
     ) 
         public {
             __ERC777_init(tokenName, tokenSymbol, defaultOperators);
-             _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-             grantRole(MINTER_ROLE, msg.sender);
+            _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+            __ERC777GSNUpgreadable_init(msg.sender, msg.sender);
+            __ERC777WithAdminOperatorUpgreadable_init(msg.sender);
+            grantRole(MINTER_ROLE, msg.sender);
     }
 
     function mint(
@@ -91,5 +97,25 @@ contract PToken is
         );
         _burn(account, amount, data, operatorData);
         emit Redeem(account, amount, underlyingAssetRecipient);
+    }
+
+    function grantMinterRole(address _account) external {
+        grantRole(MINTER_ROLE, _account);
+    }
+
+    function revokeMinterRole(address _account) external {
+        revokeRole(MINTER_ROLE, _account);
+    }
+
+    function hasMinterRole(address _account) external view returns (bool) {
+        return hasRole(MINTER_ROLE, _account);
+    }
+
+    function _msgSender() internal view override(ContextUpgradeable, ERC777GSNUpgreadable) returns (address payable) {
+        return GSNRecipientUpgradeable._msgSender();
+  }
+
+    function _msgData() internal view override(ContextUpgradeable, ERC777GSNUpgreadable) returns (bytes memory) {
+        return GSNRecipientUpgradeable._msgData();
     }
 }

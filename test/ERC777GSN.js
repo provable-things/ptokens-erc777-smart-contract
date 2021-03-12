@@ -8,6 +8,7 @@ const pTokenArtifact = artifacts.require('PToken.sol')
 const { fixSignaturePerEIP155 } = require('./test-utils')
 const { GSNDevProvider } = require('@openzeppelin/gsn-provider')
 
+
 contract('pToken/ERC777GSN', ([ owner, other, ownerAddress, relayerAddress, trustedSigner, feeTarget ]) => {
   let relayer
   let pTokenContract
@@ -45,7 +46,7 @@ contract('pToken/ERC777GSN', ([ owner, other, ownerAddress, relayerAddress, trus
     await pTokenContractTemp.setTrustedSigner(trustedSigner, { from: owner })
     await pTokenContractTemp.setFeeTarget(feeTarget, { from: owner })
     await fundRecipient(web3, { recipient: pTokenContractTemp.address, amount: web3.utils.toWei('1') })
-    const gsnProvider = new GSNDevProvider(web3.currentProvider, {
+    const gsnProvider = new GSNDevProvider("http://localhost:8090", {
       ownerAddress,
       relayerAddress,
       approveFunction: getApprovalData

@@ -1,11 +1,12 @@
 pragma solidity ^0.6.2;
 
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/GSN/GSNRecipientUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract ERC777GSN is OwnableUpgradeable, GSNRecipientUpgradeable, ERC777Upgradeable {
+contract ERC777GSNUpgreadable is Initializable, OwnableUpgradeable, GSNRecipientUpgradeable, ERC777Upgradeable {
   using ECDSAUpgradeable for bytes32;
   uint256 constant GSN_RATE_UNIT = 10**18;
 
@@ -16,25 +17,27 @@ contract ERC777GSN is OwnableUpgradeable, GSNRecipientUpgradeable, ERC777Upgrade
 
   address public gsnTrustedSigner;
   address public gsnFeeTarget;
-  uint256 public gsnExtraGas = 40000; // the gas cost of _postRelayedCall()
+  uint256 public gsnExtraGas; // the gas cost of _postRelayedCall()
 
-  constructor(
+  function __ERC777GSNUpgreadable_init(
     address _gsnTrustedSigner,
     address _gsnFeeTarget
   )
     public
+    initializer
   {
     require(_gsnTrustedSigner != address(0), "trusted signer is the zero address");
     gsnTrustedSigner = _gsnTrustedSigner;
     require(_gsnFeeTarget != address(0), "fee target is the zero address");
     gsnFeeTarget = _gsnFeeTarget;
+    gsnExtraGas = 40000;
   }
 
-  function _msgSender() override(GSNRecipientUpgradeable, ContextUpgradeable) internal view returns (address payable) {
+  function _msgSender() internal view virtual override(ContextUpgradeable, GSNRecipientUpgradeable) returns (address payable) {
     return GSNRecipientUpgradeable._msgSender();
   }
 
-  function _msgData() override(GSNRecipientUpgradeable, ContextUpgradeable) internal view returns (bytes memory) {
+  function _msgData() internal view virtual override(ContextUpgradeable, GSNRecipientUpgradeable) returns (bytes memory) {
     return GSNRecipientUpgradeable._msgData();
   }
 

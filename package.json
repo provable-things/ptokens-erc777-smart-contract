@@ -4,7 +4,7 @@
   "description": "The pToken ERC777 smart-contract & bytecode generator",
   "main": "bytecode-generator.js",
   "scripts": {
-    "test": "npx truffle test"
+    "test": "npx truffle test --network fork"
   },
   "repository": {
     "type": "git",
