@@ -282,4 +282,14 @@ contract('pToken', ([OWNER, ...accounts]) => {
     const expectedResult = '0x24b76fd500000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
     assert.strictEqual(result, expectedResult)
   })
+
+  it('Should grant minter role to EOA', async () => {
+    let role = web3.utils.soliditySha3('MINTER_ROLE')
+    const address = '0xedB86cd455ef3ca43f0e227e00469C3bDFA40628'
+    const hasRoleBefore = await methods.hasRole(role, address)
+    assert.strictEqual(hasRoleBefore, false)
+    await methods.grantRole(role, address)
+    const hasRoleAfter = await methods.hasRole(role, address)
+    assert.strictEqual(hasRoleAfter, true)
+  })
 })
