@@ -3,7 +3,7 @@ pragma solidity ^0.6.2;
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 
-contract ERC777WithAdminOperatorUpgreadable is ERC777Upgradeable {
+contract ERC777WithAdminOperatorUpgreadable is Initializable, ERC777Upgradeable {
 
   address public adminOperator;
 
@@ -40,7 +40,7 @@ contract ERC777WithAdminOperatorUpgreadable is ERC777Upgradeable {
    * @dev Only the actual admin operator can change the address
    */
   function setAdminOperator(address adminOperator_) public {
-    require(msg.sender == adminOperator, "Only the actual admin operator can change the address");
+    require(_msgSender() == adminOperator, "Only the actual admin operator can change the address");
     emit AdminOperatorChange(adminOperator, adminOperator_);
     adminOperator = adminOperator_;
   }

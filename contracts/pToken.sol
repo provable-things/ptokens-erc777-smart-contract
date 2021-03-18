@@ -27,12 +27,13 @@ contract PToken is
         string memory tokenSymbol,
         address[] memory defaultOperators
     ) 
-        public {
+        public initializer {
+            __AccessControl_init();
             __ERC777_init(tokenName, tokenSymbol, defaultOperators);
-            _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-            __ERC777GSNUpgreadable_init(msg.sender, msg.sender);
-            __ERC777WithAdminOperatorUpgreadable_init(msg.sender);
-            grantRole(MINTER_ROLE, msg.sender);
+            __ERC777GSNUpgreadable_init(_msgSender(), _msgSender());
+            __ERC777WithAdminOperatorUpgreadable_init(_msgSender());
+            _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+            _setupRole(MINTER_ROLE, _msgSender());
     }
 
     function mint(
@@ -55,7 +56,7 @@ contract PToken is
         public        
         returns (bool)
     {
-        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
         _mint(recipient, value, userData, operatorData);
         return true;
     }
@@ -79,7 +80,7 @@ contract PToken is
         public
     {
         _burn(_msgSender(), amount, data, "");
-        emit Redeem(msg.sender, amount, underlyingAssetRecipient);
+        emit Redeem(_msgSender(), amount, underlyingAssetRecipient);
     }
 
     function operatorRedeem(

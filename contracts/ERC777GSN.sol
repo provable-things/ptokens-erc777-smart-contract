@@ -26,11 +26,13 @@ contract ERC777GSNUpgreadable is Initializable, OwnableUpgradeable, GSNRecipient
     public
     initializer
   {
+    __GSNRecipient_init();
+    __Ownable_init();
+
     require(_gsnTrustedSigner != address(0), "trusted signer is the zero address");
     gsnTrustedSigner = _gsnTrustedSigner;
+
     require(_gsnFeeTarget != address(0), "fee target is the zero address");
-    __GSNRecipient_init();
-    OwnableUpgradeable.__Ownable_init();
     gsnFeeTarget = _gsnFeeTarget;
     gsnExtraGas = 40000;
   }
