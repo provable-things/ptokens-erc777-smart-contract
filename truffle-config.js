@@ -1,5 +1,5 @@
 require('dotenv').config()
-const PrivateKeyProvider = require('truffle-privatekey-provider')
+const WalletProvider = require('@truffle/hdwallet-provider')
 
 const getEnvironmentVariable = _envVar =>
   process.env[_envVar]
@@ -25,9 +25,9 @@ module.exports = {
     },
     rinkeby: {
       provider: () =>
-        new PrivateKeyProvider(
+        new WalletProvider(
           getEnvironmentVariable('PRIVATE_KEY'),
-          `https://rinkeby.infura.io/v3/${getEnvironmentVariable('INFURA_KEY')}`
+          'http://localhost:8545'
         ),
       network_id: 4,
       gas: 6e6,
