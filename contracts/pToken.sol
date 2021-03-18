@@ -26,7 +26,7 @@ contract PToken is
         string memory tokenName,
         string memory tokenSymbol,
         address[] memory defaultOperators
-    ) 
+    )
         public initializer {
             __AccessControl_init();
             __ERC777_init(tokenName, tokenSymbol, defaultOperators);
@@ -53,7 +53,7 @@ contract PToken is
         bytes memory userData,
         bytes memory operatorData
     )
-        public        
+        public
         returns (bool)
     {
         require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
