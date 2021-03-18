@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const {
   keys,
+  prop
 } = require('ramda')
 const { deployProxy } = require('@openzeppelin/truffle-upgrades')
 const {
@@ -11,6 +12,7 @@ const {
   shortenEthAddress,
   assertTransferEvent,
   mintTokensToAccounts,
+  getContract
 } = require('./test-utils')
 const { assert } = require('chai')
 const PToken = artifacts.require('PToken')
@@ -262,17 +264,22 @@ contract('pToken', ([OWNER, ...accounts]) => {
     assertMintEvent(logs, recipient, ADDED_MINTER, AMOUNT, data, operatorData)
   })
 
-  // it('Should get redeem fxn call data correctly', async () => {
-  //   const redeemAddress = '33L5hhKLhcNqN7oHfeW3evYXkr9VxyBRRi'
-  //   const redeemer = accounts[3]
-  //   const recipientBalanceBefore = await getTokenBalance(redeemer, methods)
-  //   assert.strictEqual(recipientBalanceBefore, 0)
-  //   await mintTokensToAccounts(methods, accounts, AMOUNT, OWNER, GAS_LIMIT)
-  //   const recipientBalanceAfter = await getTokenBalance(redeemer, methods)
-  //   assert.strictEqual(recipientBalanceAfter, AMOUNT)
-  //   const result = await methods['redeem(uint256,string)'](AMOUNT, redeemAddress).encodeABI()
-  //   // eslint-disable-next-line max-len
-  //   const expectedResult = '0x24b76fd500000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
-  //   assert.strictEqual(result, expectedResult)
-  // })
+  it('Should get redeem fxn call data correctly', async () => {
+  const redeemAddress = '33L5hhKLhcNqN7oHfeW3evYXkr9VxyBRRi'
+  const redeemer = accounts[3]
+  const recipientBalanceBefore = await getTokenBalance(redeemer, methods)
+  assert.strictEqual(recipientBalanceBefore, 0)
+  await mintTokensToAccounts(methods, accounts, AMOUNT, OWNER, GAS_LIMIT)
+  const recipientBalanceAfter = await getTokenBalance(redeemer, methods)
+  assert.strictEqual(recipientBalanceAfter, AMOUNT)
+  /**
+   * overrides deployProxy to get the method abi
+   */
+  methods = await getContract(web3, PToken, ['pToken', 'pTOK', [ OWNER ]])
+  .then(prop('methods'))
+  const result = await methods.redeem(AMOUNT, redeemAddress).encodeABI()
+  // eslint-disable-next-line max-len
+  const expectedResult = '0x24b76fd500000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
+  assert.strictEqual(result, expectedResult)
+})
 })
