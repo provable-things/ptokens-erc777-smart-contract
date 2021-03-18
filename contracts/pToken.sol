@@ -19,7 +19,8 @@ contract PToken is
     event Redeem(
         address indexed redeemer,
         uint256 value,
-        string underlyingAssetRecipient
+        string underlyingAssetRecipient,
+        bytes userData
     );
 
     function initialize(
@@ -74,19 +75,19 @@ contract PToken is
 
     function redeem(
         uint256 amount,
-        bytes memory data,
+        bytes memory userData,
         string memory underlyingAssetRecipient
     )
         public
     {
-        _burn(_msgSender(), amount, data, "");
-        emit Redeem(_msgSender(), amount, underlyingAssetRecipient);
+        _burn(_msgSender(), amount, userData, "");
+        emit Redeem(_msgSender(), amount, underlyingAssetRecipient, userData);
     }
 
     function operatorRedeem(
         address account,
         uint256 amount,
-        bytes calldata data,
+        bytes calldata userData,
         bytes calldata operatorData,
         string calldata underlyingAssetRecipient
     )
@@ -96,8 +97,8 @@ contract PToken is
             isOperatorFor(_msgSender(), account),
             "ERC777: caller is not an operator for holder"
         );
-        _burn(account, amount, data, operatorData);
-        emit Redeem(account, amount, underlyingAssetRecipient);
+        _burn(account, amount, userData, operatorData);
+        emit Redeem(account, amount, underlyingAssetRecipient, userData);
     }
 
     function grantMinterRole(address _account) external {
