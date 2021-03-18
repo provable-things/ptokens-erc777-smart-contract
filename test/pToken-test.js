@@ -189,7 +189,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
         from: OWNER,
         gas: GAS_LIMIT,
       }))
-    
+
     assert.isTrue(await methods
       .hasMinterRole(OWNER, {
         from: OWNER,
@@ -208,11 +208,11 @@ contract('pToken', ([OWNER, ...accounts]) => {
         from: OWNER,
         gas: GAS_LIMIT,
       })
-      assert.isTrue(await methods
-        .hasMinterRole(ADDED_MINTER, {
-          from: ADDED_MINTER,
-          gas: GAS_LIMIT,
-        }))
+    assert.isTrue(await methods
+      .hasMinterRole(ADDED_MINTER, {
+        from: ADDED_MINTER,
+        gas: GAS_LIMIT,
+      }))
   })
 
   it(`${shortenEthAddress(OWNER)} can revoke 'minter' role`, async () => {
@@ -221,11 +221,11 @@ contract('pToken', ([OWNER, ...accounts]) => {
         from: OWNER,
         gas: GAS_LIMIT,
       })
-      assert.isTrue(await methods
-        .hasMinterRole(ADDED_MINTER, {
-          from: ADDED_MINTER,
-          gas: GAS_LIMIT,
-        }))
+    assert.isTrue(await methods
+      .hasMinterRole(ADDED_MINTER, {
+        from: ADDED_MINTER,
+        gas: GAS_LIMIT,
+      }))
 
     await methods
       .revokeMinterRole(ADDED_MINTER, {
@@ -242,10 +242,10 @@ contract('pToken', ([OWNER, ...accounts]) => {
 
   it('newly added minter should be able to mint tokens & emit correct events', async () => {
     await methods
-    .grantMinterRole(ADDED_MINTER, {
-      from: OWNER,
-      gas: GAS_LIMIT,
-    })
+      .grantMinterRole(ADDED_MINTER, {
+        from: OWNER,
+        gas: GAS_LIMIT,
+      })
     const data = null
     const operatorData = null
     const expectedNumEvents = 2
@@ -265,21 +265,21 @@ contract('pToken', ([OWNER, ...accounts]) => {
   })
 
   it('Should get redeem fxn call data correctly', async () => {
-  const redeemAddress = '33L5hhKLhcNqN7oHfeW3evYXkr9VxyBRRi'
-  const redeemer = accounts[3]
-  const recipientBalanceBefore = await getTokenBalance(redeemer, methods)
-  assert.strictEqual(recipientBalanceBefore, 0)
-  await mintTokensToAccounts(methods, accounts, AMOUNT, OWNER, GAS_LIMIT)
-  const recipientBalanceAfter = await getTokenBalance(redeemer, methods)
-  assert.strictEqual(recipientBalanceAfter, AMOUNT)
-  /**
-   * overrides deployProxy to get the method abi
-   */
-  methods = await getContract(web3, PToken, ['pToken', 'pTOK', [ OWNER ]])
-  .then(prop('methods'))
-  const result = await methods.redeem(AMOUNT, redeemAddress).encodeABI()
-  // eslint-disable-next-line max-len
-  const expectedResult = '0x24b76fd500000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
-  assert.strictEqual(result, expectedResult)
-})
+    const redeemAddress = '33L5hhKLhcNqN7oHfeW3evYXkr9VxyBRRi'
+    const redeemer = accounts[3]
+    const recipientBalanceBefore = await getTokenBalance(redeemer, methods)
+    assert.strictEqual(recipientBalanceBefore, 0)
+    await mintTokensToAccounts(methods, accounts, AMOUNT, OWNER, GAS_LIMIT)
+    const recipientBalanceAfter = await getTokenBalance(redeemer, methods)
+    assert.strictEqual(recipientBalanceAfter, AMOUNT)
+    /**
+     * overrides deployProxy to get the method abi
+     */
+    methods = await getContract(web3, PToken, ['pToken', 'pTOK', [ OWNER ]])
+      .then(prop('methods'))
+    const result = await methods.redeem(AMOUNT, redeemAddress).encodeABI()
+    // eslint-disable-next-line max-len
+    const expectedResult = '0x24b76fd500000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
+    assert.strictEqual(result, expectedResult)
+  })
 })
