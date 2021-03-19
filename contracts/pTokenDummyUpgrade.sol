@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 import "./ERC777GSN.sol";
 import "./ERC777WithAdminOperator.sol";
 
-contract PToken is
+contract PTokenDummyUpgrade is
     Initializable,
     AccessControlUpgradeable,
     ERC777Upgradeable,
@@ -58,7 +58,6 @@ contract PToken is
         public
         returns (bool)
     {
-        require(recipient != address(this) , "Recipient cannot be the token contract address!");
         require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
         _mint(recipient, value, userData, operatorData);
         return true;
@@ -121,5 +120,9 @@ contract PToken is
 
     function _msgData() internal view override(ContextUpgradeable, ERC777GSNUpgreadable) returns (bytes memory) {
         return GSNRecipientUpgradeable._msgData();
+    }
+
+    function theMeaningOfLife() external returns(uint256) {
+        return 42;
     }
 }

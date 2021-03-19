@@ -10,7 +10,8 @@ contract('pToken/ERC777WithAdminOperator', ([ OWNER, NON_OWNER, ADMIN_OPERATOR ]
   let pTokenContract
 
   beforeEach(async () => {
-    pTokenContract = await deployProxy(pToken, [ 'pToken', 'pTOK', [ OWNER ] ])
+    pTokenContract = await deployProxy(pToken, [ 'pToken', 'pTOK', OWNER ])
+    await pTokenContract.grantMinterRole(OWNER, { from: OWNER, gas: 300000 })
     await pTokenContract.mint(OWNER, 100000, { from: OWNER })
     await pTokenContract.setAdminOperator(ADMIN_OPERATOR, { from: OWNER })
   })

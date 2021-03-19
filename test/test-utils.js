@@ -103,7 +103,7 @@ module.exports.getContractWithAddress = (_web3, _artifact, _constructorParams) =
     _artifact
       .new(..._constructorParams)
       .then(({ contract: { _jsonInterface, _address } }) =>
-        resolve({contract: new _web3.eth.Contract(_jsonInterface, _address), address: _address})
+        resolve({ contract: new _web3.eth.Contract(_jsonInterface, _address), address: _address })
       )
       .catch(reject)
   )

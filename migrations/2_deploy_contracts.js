@@ -7,10 +7,12 @@ require('@openzeppelin/test-helpers/configure')({
 const PToken = artifacts.require('PToken')
 
 module.exports = async (deployer, network, accounts) => {
-  if (network.includes('develop')) {
+  if (network.includes('develop'))
     await singletons.ERC1820Registry(accounts[0])
-  }
-  const instance = await deployProxy(PToken, [ 'pToken', 'pTOK', [ accounts[0] ] ], { deployer, initializer: 'initialize' })
-  // eslint-disable-next-line no-console
-  console.log('Deployed', instance.address)
+  const instance = await deployProxy(
+    PToken,
+    [ 'pToken', 'pTOK', accounts[0] ],
+    { deployer, initializer: 'initialize' }
+  )
+  console.info('Deployed', instance.address)
 }
