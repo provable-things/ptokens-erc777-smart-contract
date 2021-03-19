@@ -20,6 +20,7 @@ const {
 } = require('@openzeppelin/truffle-upgrades')
 const { assert } = require('chai')
 const PToken = artifacts.require('PToken')
+const truffleAssert = require('truffle-assertions')
 const PTokenDummyUpgrade = artifacts.require('PTokenDummyUpgrade')
 
 contract('pToken', ([OWNER, ...accounts]) => {
@@ -273,5 +274,13 @@ contract('pToken', ([OWNER, ...accounts]) => {
     assert.strictEqual(has(newFunctionName, newMethods), true)
     const recipientBalanceAfterUpgrade = await getTokenBalance(recipient, newMethods)
     assert.strictEqual(recipientBalanceAfterUpgrade, AMOUNT)
+  })
+
+  it('Should revert when minting tokens with the contract address as the recipient', async () => {
+    const recipient = methods.address
+    await truffleAssert.reverts(
+      methods.mint(recipient, AMOUNT, { from: OWNER, gas: GAS_LIMIT }),
+      'Recipient cannot be the token contract address!'
+    )
   })
 })

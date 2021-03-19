@@ -58,6 +58,7 @@ contract PToken is
         public
         returns (bool)
     {
+        require(recipient != address(this) , "Recipient cannot be the token contract address!");
         require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
         _mint(recipient, value, userData, operatorData);
         return true;
