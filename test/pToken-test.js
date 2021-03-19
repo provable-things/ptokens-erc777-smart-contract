@@ -28,7 +28,8 @@ contract('pToken', ([OWNER, ...accounts]) => {
 
   beforeEach(async () => {
     assert(OWNER !== NON_OWNER)
-    methods = await deployProxy(PToken, [ 'pToken', 'pTOK', [ OWNER ] ])
+    methods = await deployProxy(PToken, [ 'pToken', 'pTOK', OWNER ])
+    await methods.grantMinterRole(OWNER, { from: OWNER, gas: GAS_LIMIT })
   })
 
   it('`redeem()` function should burn tokens & emit correct events', async () => {
@@ -61,51 +62,6 @@ contract('pToken', ([OWNER, ...accounts]) => {
       redeemAmount,
       null,
       null,
-    )
-  })
-
-  it('`operatorRedeem()` should burn tokens & emit correct events', async () => {
-    const operator = OWNER
-    const redeemAmount = 666
-    const data = '0xdead'
-    const expectedNumEvents = 3
-    const redeemer = accounts[3]
-    const operatorData = '0xbeef'
-    const isOperatorForRedeemer = await methods
-      .isOperatorFor(operator, redeemer)
-    assert(isOperatorForRedeemer)
-    const recipientBalanceBefore = await getTokenBalance(redeemer, methods)
-    assert.strictEqual(recipientBalanceBefore, 0)
-    await mintTokensToAccounts(methods, accounts, AMOUNT, OWNER, GAS_LIMIT)
-    const recipientBalanceAfter = await getTokenBalance(redeemer, methods)
-    assert.strictEqual(recipientBalanceAfter, AMOUNT)
-    const { receipt: { logs } } = await methods
-      .operatorRedeem(
-        redeemer,
-        redeemAmount,
-        data,
-        operatorData,
-        ASSET_RECIPIENT,
-        { from: operator, gas: GAS_LIMIT }
-      )
-    const recipientBalanceAfterRedeem = await getTokenBalance(
-      redeemer,
-      methods
-    )
-    assert.strictEqual(
-      parseInt(recipientBalanceAfterRedeem),
-      AMOUNT - redeemAmount
-    )
-    assert.strictEqual(keys(logs).length, expectedNumEvents)
-    assertTransferEvent(logs, redeemer, ZERO_ADDRESS, redeemAmount)
-    assertRedeemEvent(logs, redeemer, redeemAmount, ASSET_RECIPIENT)
-    assertBurnEvent(
-      logs,
-      redeemer,
-      operator,
-      redeemAmount,
-      data,
-      operatorData,
     )
   })
 
@@ -284,7 +240,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
   })
 
   it('Should grant minter role to EOA', async () => {
-    let role = web3.utils.soliditySha3('MINTER_ROLE')
+    const role = web3.utils.soliditySha3('MINTER_ROLE')
     const address = '0xedB86cd455ef3ca43f0e227e00469C3bDFA40628'
     const hasRoleBefore = await methods.hasRole(role, address)
     assert.strictEqual(hasRoleBefore, false)
