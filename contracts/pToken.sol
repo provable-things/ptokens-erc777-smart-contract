@@ -26,15 +26,16 @@ contract PToken is
     function initialize(
         string memory tokenName,
         string memory tokenSymbol,
-        address[] memory defaultOperators
+        address defaultAdmin
     )
-        public initializer {
-            __AccessControl_init();
-            __ERC777_init(tokenName, tokenSymbol, defaultOperators);
-            __ERC777GSNUpgreadable_init(_msgSender(), _msgSender());
-            __ERC777WithAdminOperatorUpgreadable_init(_msgSender());
-            _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-            _setupRole(MINTER_ROLE, _msgSender());
+        public initializer
+    {
+        address[] memory defaultOperators;
+        __AccessControl_init();
+        __ERC777_init(tokenName, tokenSymbol, defaultOperators);
+        __ERC777GSNUpgreadable_init(defaultAdmin, defaultAdmin);
+        __ERC777WithAdminOperatorUpgreadable_init(defaultAdmin);
+        _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
     }
 
     function mint(
