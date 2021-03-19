@@ -41,7 +41,8 @@ contract('pToken/ERC777GSN', ([ owner, other, ownerAddress, relayerAddress, trus
   after(() => relayer.kill())
 
   beforeEach(async () => {
-    const pTokenContractTemp = await deployProxy(pTokenArtifact, ['Test', 'TST', [owner]])
+    const pTokenContractTemp = await deployProxy(pTokenArtifact, ['Test', 'TST', owner])
+    await pTokenContractTemp.grantMinterRole(owner, { from: owner, gas: 300000 })
     await pTokenContractTemp.mint(owner, '1000000000000000000', { from: owner })
     await pTokenContractTemp.setTrustedSigner(trustedSigner, { from: owner })
     await pTokenContractTemp.setFeeTarget(feeTarget, { from: owner })
