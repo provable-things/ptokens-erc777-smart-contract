@@ -33,11 +33,11 @@ module.exports = {
       gas: 6e6,
       gasPrice: 5e9,
       websockets: true
-    }
+    },
   },
   compilers: {
     solc: {
-      version: '0.5.5',
+      version: '0.6.2',
       settings: {
         optimizer: {
           enabled: true,

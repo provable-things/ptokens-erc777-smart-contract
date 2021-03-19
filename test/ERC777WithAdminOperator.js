@@ -3,13 +3,14 @@ const {
   expectRevert,
 } = require('@openzeppelin/test-helpers')
 const { expect } = require('chai')
+const { deployProxy } = require('@openzeppelin/truffle-upgrades')
 const pToken = artifacts.require('PToken.sol')
 
 contract('pToken/ERC777WithAdminOperator', ([ OWNER, NON_OWNER, ADMIN_OPERATOR ]) => {
   let pTokenContract
 
   beforeEach(async () => {
-    pTokenContract = await pToken.new('Test', 'TST', [], { from: OWNER })
+    pTokenContract = await deployProxy(pToken, [ 'pToken', 'pTOK', [ OWNER ] ])
     await pTokenContract.mint(OWNER, 100000, { from: OWNER })
     await pTokenContract.setAdminOperator(ADMIN_OPERATOR, { from: OWNER })
   })

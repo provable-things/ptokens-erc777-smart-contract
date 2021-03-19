@@ -1,20 +1,20 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.2;
 
-import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
-import "./AbstractOwnable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
+
 import "./ERC777GSN.sol";
 import "./ERC777WithAdminOperator.sol";
-import "./ERC777OptionalAckOnMint.sol";
 
 contract PToken is
-    AbstractOwnable,
-    ERC777,
-    ERC777OptionalAckOnMint,
-    ERC777GSN,
-    ERC777WithAdminOperator
+    Initializable,
+    AccessControlUpgradeable,
+    ERC777Upgradeable,
+    ERC777GSNUpgreadable,
+    ERC777WithAdminOperatorUpgreadable
 {
-
-    address public pNetwork;
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     event Redeem(
         address indexed redeemer,
@@ -22,37 +22,18 @@ contract PToken is
         string underlyingAssetRecipient
     );
 
-    constructor(
+    function initialize(
         string memory tokenName,
         string memory tokenSymbol,
         address[] memory defaultOperators
-    )
-        ERC777(tokenName, tokenSymbol, defaultOperators)
-        ERC777GSN(msg.sender, msg.sender)
-        ERC777WithAdminOperator(msg.sender)
-        public
-    {
-        pNetwork = _msgSender();
-    }
-
-    function owner() internal view returns (address) {
-        return pNetwork;
-    }
-
-    function changePNetwork(
-        address newPNetwork
-    )
-        external
-    {
-        require(
-            _msgSender() == pNetwork,
-            "Only the pNetwork can change the `pNetwork` account!"
-        );
-        require(
-            newPNetwork != address(0),
-            "pNetwork cannot be the zero address!"
-        );
-        pNetwork = newPNetwork;
+    ) 
+        public initializer {
+            __AccessControl_init();
+            __ERC777_init(tokenName, tokenSymbol, defaultOperators);
+            __ERC777GSNUpgreadable_init(_msgSender(), _msgSender());
+            __ERC777WithAdminOperatorUpgreadable_init(_msgSender());
+            _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+            _setupRole(MINTER_ROLE, _msgSender());
     }
 
     function mint(
@@ -72,18 +53,11 @@ contract PToken is
         bytes memory userData,
         bytes memory operatorData
     )
-        public
+        public        
         returns (bool)
     {
-        require(
-            _msgSender() == pNetwork,
-            "Only the pNetwork can mint tokens!"
-        );
-        require(
-            recipient != address(0),
-            "pToken: Cannot mint to the zero address!"
-        );
-        _mint(pNetwork, recipient, value, userData, operatorData);
+        require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
+        _mint(recipient, value, userData, operatorData);
         return true;
     }
 
@@ -105,8 +79,8 @@ contract PToken is
     )
         public
     {
-        _burn(_msgSender(), _msgSender(), amount, data, "");
-        emit Redeem(msg.sender, amount, underlyingAssetRecipient);
+        _burn(_msgSender(), amount, data, "");
+        emit Redeem(_msgSender(), amount, underlyingAssetRecipient);
     }
 
     function operatorRedeem(
@@ -122,7 +96,27 @@ contract PToken is
             isOperatorFor(_msgSender(), account),
             "ERC777: caller is not an operator for holder"
         );
-        _burn(_msgSender(), account, amount, data, operatorData);
+        _burn(account, amount, data, operatorData);
         emit Redeem(account, amount, underlyingAssetRecipient);
+    }
+
+    function grantMinterRole(address _account) external {
+        grantRole(MINTER_ROLE, _account);
+    }
+
+    function revokeMinterRole(address _account) external {
+        revokeRole(MINTER_ROLE, _account);
+    }
+
+    function hasMinterRole(address _account) external view returns (bool) {
+        return hasRole(MINTER_ROLE, _account);
+    }
+
+    function _msgSender() internal view override(ContextUpgradeable, ERC777GSNUpgreadable) returns (address payable) {
+        return GSNRecipientUpgradeable._msgSender();
+  }
+
+    function _msgData() internal view override(ContextUpgradeable, ERC777GSNUpgreadable) returns (bytes memory) {
+        return GSNRecipientUpgradeable._msgData();
     }
 }
