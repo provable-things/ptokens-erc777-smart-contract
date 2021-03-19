@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */
 const {
+  has,
   keys,
   prop
 } = require('ramda')
-const { deployProxy } = require('@openzeppelin/truffle-upgrades')
 const {
   assertMintEvent,
   assertBurnEvent,
@@ -14,8 +14,13 @@ const {
   mintTokensToAccounts,
   getContract
 } = require('./test-utils')
+const {
+  deployProxy,
+  upgradeProxy,
+} = require('@openzeppelin/truffle-upgrades')
 const { assert } = require('chai')
 const PToken = artifacts.require('PToken')
+const PTokenDummyUpgrade = artifacts.require('PTokenDummyUpgrade')
 
 contract('pToken', ([OWNER, ...accounts]) => {
   let methods
@@ -247,5 +252,26 @@ contract('pToken', ([OWNER, ...accounts]) => {
     await methods.grantRole(role, address)
     const hasRoleAfter = await methods.hasRole(role, address)
     assert.strictEqual(hasRoleAfter, true)
+  })
+
+  it('Should upgrade contract', async () => {
+    const newFunctionName = 'theMeaningOfLife'
+    assert.strictEqual(has(newFunctionName, methods), false)
+    const newMethods = await upgradeProxy(methods.address, PTokenDummyUpgrade)
+    assert.strictEqual(has(newFunctionName, newMethods), true)
+  })
+
+  it('User balance should remain after contract upgrade', async () => {
+    const recipient = accounts[7]
+    const newFunctionName = 'theMeaningOfLife'
+    const recipientBalanceBefore = await getTokenBalance(recipient, methods)
+    await methods.mint(recipient, AMOUNT, { from: OWNER, gas: GAS_LIMIT })
+    const recipientBalanceAfter = await getTokenBalance(recipient, methods)
+    assert.strictEqual(recipientBalanceBefore, 0)
+    assert.strictEqual(recipientBalanceAfter, AMOUNT)
+    const newMethods = await upgradeProxy(methods.address, PTokenDummyUpgrade)
+    assert.strictEqual(has(newFunctionName, newMethods), true)
+    const recipientBalanceAfterUpgrade = await getTokenBalance(recipient, newMethods)
+    assert.strictEqual(recipientBalanceAfterUpgrade, AMOUNT)
   })
 })
