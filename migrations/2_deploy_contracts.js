@@ -14,5 +14,5 @@ module.exports = async (deployer, network, accounts) => {
     [ 'pToken', 'pTOK', accounts[0] ],
     { deployer, initializer: 'initialize' }
   )
-  console.info('Deployed', instance.address)
+  console.info('\nDeployed address:', instance.address, '\n')
 }
