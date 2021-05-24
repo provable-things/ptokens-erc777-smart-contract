@@ -2,15 +2,16 @@ pragma solidity ^0.6.2;
 
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 
 import "./ERC777GSN.sol";
 import "./ERC777WithAdminOperator.sol";
 
+/**
+ * @dev Note that the ERC777Upgradeable contract itself is inherited via the ERC777GSNUpgreadable contract.
+ */
 contract PToken is
     Initializable,
     AccessControlUpgradeable,
-    ERC777Upgradeable,
     ERC777GSNUpgreadable,
     ERC777WithAdminOperatorUpgreadable
 {
