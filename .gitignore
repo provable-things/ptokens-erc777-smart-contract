@@ -4,6 +4,7 @@ notes
 temp*/
 build/
 target/
+endpoints
 node_modules/
 *pnpm-debug.log
 .deployment.txt

@@ -1,0 +1,9 @@
+{
+  "ENDPOINT": "",
+  "GAS_PRICE": 10e9,
+  "PRIVATE_KEY": "",
+  "ETHERSCAN_API_KEY": "",
+  "TOKEN_NAME": "",
+  "TOKEN_SYMBOL": "",
+  "ADMIN_ADDRESS": ""
+}
