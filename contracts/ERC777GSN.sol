@@ -3,8 +3,8 @@ pragma solidity ^0.6.2;
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/GSN/GSNRecipientUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "./ERC777Upgradeable.sol";
 
 contract ERC777GSNUpgradeable is Initializable, OwnableUpgradeable, GSNRecipientUpgradeable, ERC777Upgradeable {
   using ECDSAUpgradeable for bytes32;

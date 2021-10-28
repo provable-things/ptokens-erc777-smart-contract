@@ -1,6 +1,6 @@
 pragma solidity ^0.6.2;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
+import "./ERC777Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/introspection/IERC1820RegistryUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC777/IERC777RecipientUpgradeable.sol";
 
