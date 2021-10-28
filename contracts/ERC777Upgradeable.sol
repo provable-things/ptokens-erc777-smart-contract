@@ -163,11 +163,13 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
 
         address from = _msgSender();
 
-        _callTokensToSend(from, from, recipient, amount, "", "");
+        // NOTE: Disabling ALL hooks.
+        //_callTokensToSend(from, from, recipient, amount, "", "");
 
         _move(from, from, recipient, amount, "", "");
 
-        _callTokensReceived(from, from, recipient, amount, "", "", false);
+        // NOTE: Disabling ALL hooks.
+        //_callTokensReceived(from, from, recipient, amount, "", "", false);
 
         return true;
     }
@@ -294,12 +296,14 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
 
         address spender = _msgSender();
 
-        _callTokensToSend(spender, holder, recipient, amount, "", "");
+        // NOTE:
+        //_callTokensToSend(spender, holder, recipient, amount, "", "");
 
         _move(spender, holder, recipient, amount, "", "");
         _approve(holder, spender, _allowances[holder][spender].sub(amount, "ERC777: transfer amount exceeds allowance"));
 
-        _callTokensReceived(spender, holder, recipient, amount, "", "", false);
+        // NOTE:
+        //_callTokensReceived(spender, holder, recipient, amount, "", "", false);
 
         return true;
     }
@@ -334,13 +338,15 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
 
         address operator = _msgSender();
 
-        _beforeTokenTransfer(operator, address(0), account, amount);
+        // NOTE: Disabling ALL hooks.
+        //_beforeTokenTransfer(operator, address(0), account, amount);
 
         // Update state variables
         _totalSupply = _totalSupply.add(amount);
         _balances[account] = _balances[account].add(amount);
 
-        _callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
+        // NOTE: Disabling ALL hooks.
+        //_callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
 
         emit Minted(operator, account, amount, userData, operatorData);
         emit Transfer(address(0), account, amount);
@@ -371,11 +377,13 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
 
         address operator = _msgSender();
 
-        _callTokensToSend(operator, from, to, amount, userData, operatorData);
+        // NOTE: Disabling ALL hooks.
+        //_callTokensToSend(operator, from, to, amount, userData, operatorData);
 
         _move(operator, from, to, amount, userData, operatorData);
 
-        _callTokensReceived(operator, from, to, amount, userData, operatorData, requireReceptionAck);
+        // NOTE: Disabling ALL hooks.
+        //_callTokensReceived(operator, from, to, amount, userData, operatorData, requireReceptionAck);
     }
 
     /**
@@ -398,9 +406,11 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
 
         address operator = _msgSender();
 
-        _callTokensToSend(operator, from, address(0), amount, data, operatorData);
+        // NOTE: Disabling ALL hooks.
+        //_callTokensToSend(operator, from, address(0), amount, data, operatorData);
 
-        _beforeTokenTransfer(operator, from, address(0), amount);
+        // NOTE: Disabling ALL hooks.
+        //_beforeTokenTransfer(operator, from, address(0), amount);
 
         // Update state variables
         _balances[from] = _balances[from].sub(amount, "ERC777: burn amount exceeds balance");
@@ -420,7 +430,8 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
     )
         private
     {
-        _beforeTokenTransfer(operator, from, to, amount);
+        // NOTE: Disabling ALL hooks.
+        //_beforeTokenTransfer(operator, from, to, amount);
 
         _balances[from] = _balances[from].sub(amount, "ERC777: transfer amount exceeds balance");
         _balances[to] = _balances[to].add(amount);
