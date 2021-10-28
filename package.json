@@ -2,7 +2,7 @@
   "name": "y",
   "version": "2.6.0",
   "description": "The pToken ERC777 smart-contract & bytecode generator",
-  "main": "bytecode-generator.js",
+  "main": "erc777-deployer.js",
   "scripts": {
     "compile": "npx truffle compile --all",
     "test": "npx truffle test"
