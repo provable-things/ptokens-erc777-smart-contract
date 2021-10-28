@@ -226,7 +226,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
     assertMintEvent(logs, recipient, ADDED_MINTER, AMOUNT, data, operatorData)
   })
 
-  it('Should get redeem fxn call data correctly', async () => {
+  it.only('Should get redeem fxn call data correctly', async () => {
     const redeemAddress = '33L5hhKLhcNqN7oHfeW3evYXkr9VxyBRRi'
     const redeemer = accounts[3]
     const recipientBalanceBefore = await getTokenBalance(redeemer, methods)
@@ -237,9 +237,9 @@ contract('pToken', ([OWNER, ...accounts]) => {
     /**
      * overrides deployProxy to get the method abi
      */
-    methods = await getContract(web3, PToken, ['pToken', 'pTOK', [ OWNER ]])
+    const newMethods = await getContract(web3, PToken, ['pToken', 'pTOK', [ OWNER ]])
       .then(prop('methods'))
-    const result = await methods.redeem(AMOUNT, redeemAddress).encodeABI()
+    const result = await newMethods.redeem(AMOUNT, redeemAddress).encodeABI()
     // eslint-disable-next-line max-len
     const expectedResult = '0x24b76fd500000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
     assert.strictEqual(result, expectedResult)
