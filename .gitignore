@@ -12,3 +12,4 @@ node_modules/
 .openzeppelin/unknown*.json
 **/flattened
 cache/
+artifacts/
