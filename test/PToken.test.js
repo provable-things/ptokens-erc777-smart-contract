@@ -226,7 +226,7 @@ contract('pToken', ([OWNER, ...accounts]) => {
     assertMintEvent(logs, recipient, ADDED_MINTER, AMOUNT, data, operatorData)
   })
 
-  it.only('Should get redeem fxn call data correctly', async () => {
+  it('Should get redeem fxn call data correctly', async () => {
     const redeemAddress = '33L5hhKLhcNqN7oHfeW3evYXkr9VxyBRRi'
     const redeemer = accounts[3]
     const recipientBalanceBefore = await getTokenBalance(redeemer, methods)
