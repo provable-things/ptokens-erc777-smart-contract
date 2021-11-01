@@ -40,4 +40,4 @@ const main = _ => {
   if (CLI_ARGS[DEPLOY_PTOKEN_CMD]) return deployPTokenContract()
 }
 
-main().catch(_err => console.error(_err.message))
+main().catch(_err => console.error('✘', _err.message))
