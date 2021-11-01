@@ -122,7 +122,7 @@ contract PTokenDummyUpgrade is
         return GSNRecipientUpgradeable._msgData();
     }
 
-    function theMeaningOfLife() external returns(uint256) {
+    function theMeaningOfLife() external pure returns(uint256) {
         return 42;
     }
 }
