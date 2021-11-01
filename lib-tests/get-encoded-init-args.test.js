@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 const {
   TOKEN_NAME,
   TOKEN_SYMBOL,
