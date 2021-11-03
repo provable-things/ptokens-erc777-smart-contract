@@ -3,22 +3,25 @@
 require('dotenv').config()
 const { docopt } = require('docopt')
 const { version } = require('./package.json')
-const { flattenContract } = require('./lib/flatten-contract.js')
+const { flattenContract } = require('./lib/flatten-contract')
+const { grantMinterRole } = require('./lib/grant-minter-role')
+const { deployPTokenContract } = require('./lib/deploy-ptoken')
+const { verifyPTokenContract } = require('./lib/verify-ptoken')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
-const { deployPTokenContract } = require('./lib/deploy-ptoken.js')
-const { verifyPTokenContract } = require('./lib/verify-ptoken.js')
-const { getEncodedInitArgs } = require('./lib/get-encoded-init-args.js')
+const { getEncodedInitArgs } = require('./lib/get-encoded-init-args')
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
 
 const HELP_ARG = '--help'
 const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
 const TOKEN_NAME_ARG = '<tokenName>'
+const ETH_ADDRESS_ARG = '<ethAddress>'
 const TOOL_NAME = 'ptoken-deployer.js'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
 const DEPLOY_PTOKEN_CMD = 'deployPToken'
 const VERIFY_PTOKEN_CMD = 'verifyPToken'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
+const GRANT_MINTER_ROLE_CMD = 'grantMinterRole'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
@@ -43,6 +46,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
   ${TOOL_NAME} ${VERIFY_PTOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG}
+  ${TOOL_NAME} ${GRANT_MINTER_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GET_ENCODED_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
 
 ❍ Commands:
@@ -52,11 +56,13 @@ const USAGE_INFO = `
   ${VERIFY_PTOKEN_CMD}          ❍ Verify a deployed pToken logic contract.
   ${GET_ENCODED_INIT_ARGS_CMD}    ❍ Calculate the initializer function arguments in ABI encoded format.
   ${FLATTEN_CONTRACT_CMD}       ❍ Flatten the pToken contract in case manual verification is required.
+  ${GRANT_MINTER_ROLE_CMD}       ❍ Grant a minter role to ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${SHOW_EXISTING_CONTRACTS_CMD} ❍ Show list of existing pToken logic contract addresses on various blockchains.
 
 ❍ Options:
   ${HELP_ARG}                ❍ Show this message.
   ${VERSION_ARG}             ❍ Show tool version.
+  ${ETH_ADDRESS_ARG}          ❍ A valid ETH address.
   ${TOKEN_NAME_ARG}           ❍ The name of the pToken.
   ${TOKEN_SYMBOL_ARG}         ❍ The symbol of the pToken.
   ${DEPLOYED_ADDRESS_ARG}     ❍ The ETH address of the deployed pToken.
@@ -83,6 +89,8 @@ const main = _ => {
     return flattenContract()
   } else if (CLI_ARGS[SHOW_EXISTING_CONTRACTS_CMD]) {
     return showExistingPTokenContractAddresses()
+  } else if (CLI_ARGS[GRANT_MINTER_ROLE_CMD]) {
+    return grantMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   }
 }
 
