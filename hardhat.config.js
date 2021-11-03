@@ -3,18 +3,29 @@ const {
   ENDPOINT_ENV_VAR_KEY,
   ETHERSCAN_ENV_VAR_KEY
 } = require('./lib/constants')
+const { assoc } = require('ramda')
 
 require('@nomiclabs/hardhat-etherscan')
 
+const SUPPORTED_NETWORKS = [
+  'rinkeby',
+  'ropsten',
+  'ambrosTestnet',
+]
+
+const getAllSupportedNetworks = _ =>
+  SUPPORTED_NETWORKS.reduce((_acc, _network) =>
+    assoc(_network, { url: process.env[ENDPOINT_ENV_VAR_KEY] }, _acc), {}
+  )
+
+const addLocalNetwork = _allSupportedNetworks =>
+  assoc('localhost', { url: 'http://localhost:8545' }, _allSupportedNetworks)
+
+const getAllNetworks = _ =>
+  addLocalNetwork(getAllSupportedNetworks())
+
 module.exports = {
-  networks: {
-    localhost: {
-      url: 'http://localhost:8545'
-    },
-    ropsten: {
-      url: process.env[ENDPOINT_ENV_VAR_KEY]
-    },
-  },
+  networks: getAllNetworks(),
   solidity: {
     version: '0.6.2',
     settings: {
