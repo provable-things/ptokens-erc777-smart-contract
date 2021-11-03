@@ -55,13 +55,13 @@ const USAGE_INFO = `
   ${SHOW_EXISTING_CONTRACTS_CMD} ❍ Show list of existing pToken logic contract addresses on various blockchains.
 
 ❍ Options:
-  ${HELP_ARG}              ❍ Show this message.
-  ${VERSION_ARG}           ❍ Show tool version.
-  ${TOKEN_NAME_ARG}         ❍ The name of the pToken.
-  ${TOKEN_SYMBOL_ARG}       ❍ The symbol of the pToken.
-  ${DEPLOYED_ADDRESS_ARG}   ❍ The ETH address of the deployed pToken.
-  ${TOKEN_ADMIN_ADDRESS_ARG}      ❍ The ETH address which administrates the pToken.
-  ${NETWORK_ARG}           ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
+  ${HELP_ARG}                ❍ Show this message.
+  ${VERSION_ARG}             ❍ Show tool version.
+  ${TOKEN_NAME_ARG}           ❍ The name of the pToken.
+  ${TOKEN_SYMBOL_ARG}         ❍ The symbol of the pToken.
+  ${DEPLOYED_ADDRESS_ARG}     ❍ The ETH address of the deployed pToken.
+  ${TOKEN_ADMIN_ADDRESS_ARG}        ❍ The ETH address which administrates the pToken.
+  ${NETWORK_ARG}             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
 `
 
 const main = _ => {
