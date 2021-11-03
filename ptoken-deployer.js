@@ -3,6 +3,7 @@
 require('dotenv').config()
 const { docopt } = require('docopt')
 const { version } = require('./package.json')
+const { showBalanceOf } = require('./lib/get-balance-of')
 const { flattenContract } = require('./lib/flatten-contract')
 const { grantMinterRole } = require('./lib/grant-minter-role')
 const { deployPTokenContract } = require('./lib/deploy-ptoken')
@@ -16,6 +17,7 @@ const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
 const TOKEN_NAME_ARG = '<tokenName>'
 const ETH_ADDRESS_ARG = '<ethAddress>'
+const GET_BALANCE_CMD = 'getBalanceOf'
 const TOOL_NAME = 'ptoken-deployer.js'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
 const DEPLOY_PTOKEN_CMD = 'deployPToken'
@@ -46,6 +48,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
   ${TOOL_NAME} ${VERIFY_PTOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG}
+  ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GRANT_MINTER_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GET_ENCODED_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
 
@@ -54,6 +57,7 @@ const USAGE_INFO = `
   ${SHOW_SUGGESTED_FEES_CMD}     ❍ Show 'ethers.js' suggested fees.
   ${DEPLOY_PTOKEN_CMD}          ❍ Deploy the pToken logic contract.
   ${VERIFY_PTOKEN_CMD}          ❍ Verify a deployed pToken logic contract.
+  ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${GET_ENCODED_INIT_ARGS_CMD}    ❍ Calculate the initializer function arguments in ABI encoded format.
   ${FLATTEN_CONTRACT_CMD}       ❍ Flatten the pToken contract in case manual verification is required.
   ${GRANT_MINTER_ROLE_CMD}       ❍ Grant a minter role to ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
@@ -91,6 +95,8 @@ const main = _ => {
     return showExistingPTokenContractAddresses()
   } else if (CLI_ARGS[GRANT_MINTER_ROLE_CMD]) {
     return grantMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[GET_BALANCE_CMD]) {
+    return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   }
 }
 
