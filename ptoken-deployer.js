@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
 require('dotenv').config()
+const {
+  grantMinterRole,
+  revokeMinterRole,
+} = require('./lib/change-minter-role')
 const { docopt } = require('docopt')
 const { pegOut } = require('./lib/peg-out')
 const { version } = require('./package.json')
 const { showBalanceOf } = require('./lib/get-balance-of')
 const { flattenContract } = require('./lib/flatten-contract')
-const { grantMinterRole } = require('./lib/grant-minter-role')
 const { deployPTokenContract } = require('./lib/deploy-ptoken')
 const { verifyPTokenContract } = require('./lib/verify-ptoken')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
@@ -25,10 +28,11 @@ const TOOL_NAME = 'ptoken-deployer.js'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
 const DEPLOY_PTOKEN_CMD = 'deployPToken'
 const VERIFY_PTOKEN_CMD = 'verifyPToken'
+const GRANT_ROLE_CMD = 'grantMinterRole'
+const REVOKE_ROLE_CMD = 'revokeMinterRole'
 const USER_DATA_OPTIONAL_ARG = '--userData'
 const RECIPIENT_ADDRESS_ARG = '<recipient>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
-const GRANT_MINTER_ROLE_CMD = 'grantMinterRole'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
@@ -64,7 +68,8 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
   ${TOOL_NAME} ${VERIFY_PTOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG}
   ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
-  ${TOOL_NAME} ${GRANT_MINTER_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
+  ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
+  ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GET_ENCODED_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
   ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ADDRESS_ARG} [${USER_DATA_ARG}]
 
@@ -77,7 +82,8 @@ const USAGE_INFO = `
   ${GET_ENCODED_INIT_ARGS_CMD}    ❍ Calculate the initializer function arguments in ABI encoded format.
   ${PEG_OUT_CMD}                ❍ Redeem ${AMOUNT_ARG} at ${DEPLOYED_ADDRESS_ARG} with optional ${USER_DATA_ARG}.
   ${FLATTEN_CONTRACT_CMD}       ❍ Flatten the pToken contract in case manual verification is required.
-  ${GRANT_MINTER_ROLE_CMD}       ❍ Grant a minter role to ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
+  ${GRANT_ROLE_CMD}       ❍ Grant a minter role to ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
+  ${REVOKE_ROLE_CMD}      ❍ Revoke a minter role from ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${SHOW_EXISTING_CONTRACTS_CMD} ❍ Show list of existing pToken logic contract addresses on various blockchains.
 
 ❍ Options:
@@ -88,8 +94,8 @@ const USAGE_INFO = `
   ${TOKEN_SYMBOL_ARG}         ❍ The symbol of the pToken.
   ${DEPLOYED_ADDRESS_ARG}     ❍ The ETH address of the deployed pToken.
   ${RECIPIENT_ADDRESS_ARG}           ❍ The recipient of the pegged out pTokens.
+  ${TOKEN_ADMIN_ADDRESS_ARG}        ❍ The ETH address to administrate the pToken.
   ${USER_DATA_ARG}      ❍ Optional user data in hex format [default: 0x].
-  ${TOKEN_ADMIN_ADDRESS_ARG}        ❍ The ETH address which administrates the pToken.
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
   ${NETWORK_ARG}             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
 `
@@ -113,8 +119,10 @@ const main = _ => {
     return flattenContract()
   } else if (CLI_ARGS[SHOW_EXISTING_CONTRACTS_CMD]) {
     return showExistingPTokenContractAddresses()
-  } else if (CLI_ARGS[GRANT_MINTER_ROLE_CMD]) {
+  } else if (CLI_ARGS[GRANT_ROLE_CMD]) {
     return grantMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[REVOKE_ROLE_CMD]) {
+    return revokeMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[GET_BALANCE_CMD]) {
     return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[PEG_OUT_CMD]) {
