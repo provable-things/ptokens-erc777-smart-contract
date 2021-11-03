@@ -44,7 +44,16 @@ const USAGE_INFO = `
 
 ❍ Info:
 
-  A tool to aid with deployments of the upgradeable pToken ERC777 logic contract.
+  A tool to aid with deployments of & interactions with the upgradeable pToken ERC777 logic contract.
+
+  NOTE: The tool requires a '.env' file to exist in the root of the repository with the following info:
+
+    PRIVATE_KEY=<private-key-to-sign-transactions-with>
+    ENDPOINT=<rpc-endpoint-for-blochain-to-interact-with>
+
+  NOTE: To call the '${VERIFY_PTOKEN_CMD}' function, the following extra environment variable is required:
+
+    ETHERSCAN_API_KEY=<api-key-for-automated-contract-verifications>
 
 ❍ Usage:
   ${TOOL_NAME} ${HELP_ARG}
