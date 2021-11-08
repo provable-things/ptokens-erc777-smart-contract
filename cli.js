@@ -50,9 +50,11 @@ const USAGE_INFO = `
 
   A tool to aid with deployments of & interactions with the upgradeable pToken ERC777 logic contract.
 
+  NOTE: Functions that make transactions require a private key. Please provide a GPG encrpyted file called
+        'private-key.gpg' containing your key in the root of the repository.
+
   NOTE: The tool requires a '.env' file to exist in the root of the repository with the following info:
 
-    PRIVATE_KEY=<private-key-to-sign-transactions-with>
     ENDPOINT=<rpc-endpoint-for-blochain-to-interact-with>
 
   NOTE: To call the '${VERIFY_PTOKEN_CMD}' function, the following extra environment variable is required:
