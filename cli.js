@@ -8,6 +8,7 @@ const {
 const { docopt } = require('docopt')
 const { pegOut } = require('./lib/peg-out')
 const { version } = require('./package.json')
+const { transferToken } = require('./lib/transfer-token')
 const { showBalanceOf } = require('./lib/get-balance-of')
 const { flattenContract } = require('./lib/flatten-contract')
 const { deployPTokenContract } = require('./lib/deploy-ptoken')
@@ -31,8 +32,9 @@ const DEPLOY_PTOKEN_CMD = 'deployPToken'
 const VERIFY_PTOKEN_CMD = 'verifyPToken'
 const GRANT_ROLE_CMD = 'grantMinterRole'
 const REVOKE_ROLE_CMD = 'revokeMinterRole'
+const TRANSFER_TOKEN_CMD = 'transferToken'
 const USER_DATA_OPTIONAL_ARG = '--userData'
-const RECIPIENT_ADDRESS_ARG = '<recipient>'
+const RECIPIENT_ARG = '<recipient>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
@@ -74,8 +76,9 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
+  ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${GET_ENCODED_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
-  ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ADDRESS_ARG} [${USER_DATA_ARG}]
+  ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} [${USER_DATA_ARG}]
 
 ❍ Commands:
 
@@ -83,6 +86,7 @@ const USAGE_INFO = `
   ${DEPLOY_PTOKEN_CMD}          ❍ Deploy the pToken logic contract.
   ${VERIFY_PTOKEN_CMD}          ❍ Verify a deployed pToken logic contract.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
+  ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
   ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
   ${GET_ENCODED_INIT_ARGS_CMD}    ❍ Calculate the initializer function arguments in ABI encoded format.
   ${PEG_OUT_CMD}                ❍ Redeem ${AMOUNT_ARG} at ${DEPLOYED_ADDRESS_ARG} with optional ${USER_DATA_ARG}.
@@ -99,7 +103,7 @@ const USAGE_INFO = `
   ${TOKEN_NAME_ARG}           ❍ The name of the pToken.
   ${TOKEN_SYMBOL_ARG}         ❍ The symbol of the pToken.
   ${DEPLOYED_ADDRESS_ARG}     ❍ The ETH address of the deployed pToken.
-  ${RECIPIENT_ADDRESS_ARG}           ❍ The recipient of the pegged out pTokens.
+  ${RECIPIENT_ARG}           ❍ The recipient of the pegged out pTokens.
   ${TOKEN_ADMIN_ADDRESS_ARG}        ❍ The ETH address to administrate the pToken.
   ${USER_DATA_ARG}      ❍ Optional user data in hex format [default: 0x].
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
@@ -133,11 +137,17 @@ const main = _ => {
     return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[SHOW_WALLET_DETAILS_CMD]) {
     return showWalletDetails()
+  } else if (CLI_ARGS[TRANSFER_TOKEN_CMD]) {
+    return transferToken(
+      CLI_ARGS[DEPLOYED_ADDRESS_ARG],
+      CLI_ARGS[RECIPIENT_ARG],
+      CLI_ARGS[AMOUNT_ARG],
+    )
   } else if (CLI_ARGS[PEG_OUT_CMD]) {
     return pegOut(
       CLI_ARGS[DEPLOYED_ADDRESS_ARG],
       CLI_ARGS[AMOUNT_ARG],
-      CLI_ARGS[RECIPIENT_ADDRESS_ARG],
+      CLI_ARGS[RECIPIENT_ARG],
       CLI_ARGS[USER_DATA_OPTIONAL_ARG],
     )
   }
