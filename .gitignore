@@ -14,3 +14,5 @@ node_modules/
 cache/
 artifacts/
 *flattened*
+*.gpg
+!private-key.gpg
