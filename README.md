@@ -9,7 +9,7 @@ This repo houses the Provable __pToken__ upgradeable ERC777 logic smart-contract
 After cloning the repository, first install the dependencies:
 
 ```
-> npm i
+> npm ci
 ```
 
 Then, to see the usage guide, run:
@@ -22,7 +22,7 @@ Output:
 
 ```
 
-❍  Upgradeable pToken ERC777 Contract Command Line Interface
+❍ pTokens ERC777 Command Line Interface
 
   Copyright Provable Things 2021
   Questions: greg@oraclize.it
@@ -32,7 +32,7 @@ Output:
   A tool to aid with deployments of & interactions with the upgradeable pToken ERC777 logic contract.
 
   NOTE: Functions that make transactions require a private key. Please provide a GPG encrpyted file called
-    'private-key.gpg' containing your key in the root of the repository.
+   'private-key.gpg' containing your key in the root of the repository.
 
   NOTE: The tool requires a '.env' file to exist in the root of the repository with the following info:
     ENDPOINT=<rpc-endpoint-for-blochain-to-interact-with>
@@ -46,6 +46,7 @@ Output:
   cli.js deployPToken
   cli.js flattenContract
   cli.js showSuggestedFees
+  cli.js showWalletDetails
   cli.js showExistingContracts
   cli.js verifyPToken <deployedAddress> <network>
   cli.js getBalanceOf <deployedAddress> <ethAddress>
@@ -60,12 +61,14 @@ Output:
   deployPToken          ❍ Deploy the pToken logic contract.
   verifyPToken          ❍ Verify a deployed pToken logic contract.
   getBalanceOf          ❍ Get balance of <ethAddress> of pToken at <deployedAddress>.
+  showWalletDetails     ❍ Decrypts the private key and shows address & balance information.
   getEncodedInitArgs    ❍ Calculate the initializer function arguments in ABI encoded format.
   pegOut                ❍ Redeem <amount> at <deployedAddress> with optional --userData=<hex>.
   flattenContract       ❍ Flatten the pToken contract in case manual verification is required.
   grantMinterRole       ❍ Grant a minter role to <ethAddress> for pToken at <deployedAddress>.
   revokeMinterRole      ❍ Revoke a minter role from <ethAddress> for pToken at <deployedAddress>.
   showExistingContracts ❍ Show list of existing pToken logic contract addresses on various blockchains.
+
 
 ❍ Options:
   --help                ❍ Show this message.
@@ -80,7 +83,6 @@ Output:
   <amount>              ❍ An amount in the most granular form of the token.
   <network>             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
 
-
 ```
 
 &nbsp;
@@ -90,14 +92,11 @@ Output:
 The tool requires three sensitive pieces of information provided as environment variables in order to run correctly. To easily provision them, create a file `.env` in the root of the repository and fill it in thusly:
 
 ```
-
 ENDPOINT=<ethRpcEndpoint>
 ETHERSCAN_API_KEY=<apikey>
-PRIVATE_KEY=<ethPrivateKey>
 
 ```
 
-__`PRIVATE_KEY:`__ A private key for an ETH account you'll be deploying contracts with.
 __`ETHERSCAN_API_KEY:`__ An API key for the version of etherscan you'll be verifying contracts on.
 __`ENDPOINT:`__ A working jsonRPC endpoint for the EVM-compliant blockchain you're interacting with.
 

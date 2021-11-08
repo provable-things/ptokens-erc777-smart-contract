@@ -12,6 +12,7 @@ const { showBalanceOf } = require('./lib/get-balance-of')
 const { flattenContract } = require('./lib/flatten-contract')
 const { deployPTokenContract } = require('./lib/deploy-ptoken')
 const { verifyPTokenContract } = require('./lib/verify-ptoken')
+const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
 const { getEncodedInitArgs } = require('./lib/get-encoded-init-args')
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
@@ -35,6 +36,7 @@ const RECIPIENT_ADDRESS_ARG = '<recipient>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
+const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
 const GET_ENCODED_INIT_ARGS_CMD = 'getEncodedInitArgs'
 const USER_DATA_ARG = `${USER_DATA_OPTIONAL_ARG}=<hex>`
@@ -65,6 +67,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD}
   ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD}
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
+  ${TOOL_NAME} ${SHOW_WALLET_DETAILS_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
   ${TOOL_NAME} ${VERIFY_PTOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG}
   ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
@@ -79,12 +82,14 @@ const USAGE_INFO = `
   ${DEPLOY_PTOKEN_CMD}          ❍ Deploy the pToken logic contract.
   ${VERIFY_PTOKEN_CMD}          ❍ Verify a deployed pToken logic contract.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
+  ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
   ${GET_ENCODED_INIT_ARGS_CMD}    ❍ Calculate the initializer function arguments in ABI encoded format.
   ${PEG_OUT_CMD}                ❍ Redeem ${AMOUNT_ARG} at ${DEPLOYED_ADDRESS_ARG} with optional ${USER_DATA_ARG}.
   ${FLATTEN_CONTRACT_CMD}       ❍ Flatten the pToken contract in case manual verification is required.
   ${GRANT_ROLE_CMD}       ❍ Grant a minter role to ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${REVOKE_ROLE_CMD}      ❍ Revoke a minter role from ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${SHOW_EXISTING_CONTRACTS_CMD} ❍ Show list of existing pToken logic contract addresses on various blockchains.
+
 
 ❍ Options:
   ${HELP_ARG}                ❍ Show this message.
@@ -125,6 +130,8 @@ const main = _ => {
     return revokeMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[GET_BALANCE_CMD]) {
     return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[SHOW_WALLET_DETAILS_CMD]) {
+    return showWalletDetails()
   } else if (CLI_ARGS[PEG_OUT_CMD]) {
     return pegOut(
       CLI_ARGS[DEPLOYED_ADDRESS_ARG],
