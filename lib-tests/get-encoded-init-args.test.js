@@ -36,7 +36,6 @@ describe('Testing Constructor Arg Encoder...', () => {
       CONTRACT_ADMIN_ADDRESS
     )
     const result = await encodeProxyConstructorArgs(
-      web3,
       LOGIC_CONTRACT_ADDRESS,
       PROXY_ADMIN_ADDRESS,
       pTokenInitFxnCall,
