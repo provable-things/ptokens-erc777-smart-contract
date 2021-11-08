@@ -1,8 +1,3 @@
-const {
-  TOKEN_NAME,
-  TOKEN_SYMBOL,
-  ADMIN_ADDRESS,
-} = require('../config')
 const { deployProxy } = require('@openzeppelin/truffle-upgrades')
 const { singletons } = require('@openzeppelin/test-helpers')
 require('@openzeppelin/test-helpers/configure')({
@@ -13,10 +8,9 @@ const PToken = artifacts.require('PToken')
 
 module.exports = async (deployer, network, accounts) => {
   if (network.includes('develop')) await singletons.ERC1820Registry(accounts[0])
-  const instance = await deployProxy(
+  await deployProxy(
     PToken,
-    [ TOKEN_NAME, TOKEN_SYMBOL, ADMIN_ADDRESS ],
+    [ 'tokenName', 'tokenSymbol', '0xea674fdde714fd979de3edf0f56aa9716b898ec8' ],
     { deployer, initializer: 'initialize' }
   )
-  console.info(`\nDeployed @ address ${instance.address}\n`)
 }
