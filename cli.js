@@ -8,6 +8,7 @@ const {
 const { docopt } = require('docopt')
 const { pegOut } = require('./lib/peg-out')
 const { version } = require('./package.json')
+const { approve } = require('./lib/approve.js')
 const { transferToken } = require('./lib/transfer-token')
 const { showBalanceOf } = require('./lib/get-balance-of')
 const { flattenContract } = require('./lib/flatten-contract')
@@ -22,9 +23,12 @@ const HELP_ARG = '--help'
 const TOOL_NAME = 'cli.js'
 const PEG_OUT_CMD = 'pegOut'
 const AMOUNT_ARG = '<amount>'
+const APPROVE_CMD = 'approve'
 const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
+const RECIPIENT_ARG = '<recipient>'
 const TOKEN_NAME_ARG = '<tokenName>'
+const SPENDER_ARG = '<spenderAddress>'
 const ETH_ADDRESS_ARG = '<ethAddress>'
 const GET_BALANCE_CMD = 'getBalanceOf'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
@@ -34,7 +38,6 @@ const GRANT_ROLE_CMD = 'grantMinterRole'
 const REVOKE_ROLE_CMD = 'revokeMinterRole'
 const TRANSFER_TOKEN_CMD = 'transferToken'
 const USER_DATA_OPTIONAL_ARG = '--userData'
-const RECIPIENT_ARG = '<recipient>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
@@ -76,6 +79,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
+  ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${GET_ENCODED_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
   ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} [${USER_DATA_ARG}]
@@ -93,8 +97,8 @@ const USAGE_INFO = `
   ${FLATTEN_CONTRACT_CMD}       ❍ Flatten the pToken contract in case manual verification is required.
   ${GRANT_ROLE_CMD}       ❍ Grant a minter role to ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${REVOKE_ROLE_CMD}      ❍ Revoke a minter role from ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
+  ${APPROVE_CMD}               ❍ Approve a ${SPENDER_ARG} to spend ${AMOUNT_ARG} tokens at ${DEPLOYED_ADDRESS_ARG}.
   ${SHOW_EXISTING_CONTRACTS_CMD} ❍ Show list of existing pToken logic contract addresses on various blockchains.
-
 
 ❍ Options:
   ${HELP_ARG}                ❍ Show this message.
@@ -107,6 +111,7 @@ const USAGE_INFO = `
   ${TOKEN_ADMIN_ADDRESS_ARG}        ❍ The ETH address to administrate the pToken.
   ${USER_DATA_ARG}      ❍ Optional user data in hex format [default: 0x].
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
+  ${SPENDER_ARG}      ❍ An ETH address that may spend tokens on your behalf.
   ${NETWORK_ARG}             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
 `
 
@@ -141,6 +146,12 @@ const main = _ => {
     return transferToken(
       CLI_ARGS[DEPLOYED_ADDRESS_ARG],
       CLI_ARGS[RECIPIENT_ARG],
+      CLI_ARGS[AMOUNT_ARG],
+    )
+  } else if (CLI_ARGS[APPROVE_CMD]) {
+    return approve(
+      CLI_ARGS[DEPLOYED_ADDRESS_ARG],
+      CLI_ARGS[SPENDER_ARG],
       CLI_ARGS[AMOUNT_ARG],
     )
   } else if (CLI_ARGS[PEG_OUT_CMD]) {
