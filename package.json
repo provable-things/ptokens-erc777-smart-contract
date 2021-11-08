@@ -1,8 +1,8 @@
 {
   "name": "y",
   "version": "2.6.0",
-  "description": "The pToken ERC777 smart-contract & bytecode generator",
-  "main": "ptoken-deployer.js",
+  "description": "The pToken ERC777 smart-contract & CLI",
+  "main": "cli.js",
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx mocha lib-tests"
