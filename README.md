@@ -89,16 +89,31 @@ Output:
 
 ### :radioactive: Secrets:
 
-The tool requires three sensitive pieces of information provided as environment variables in order to run correctly. To easily provision them, create a file `.env` in the root of the repository and fill it in thusly:
+This tool requires a private key in order to sign transactions. GPG is used to protect the private key. To encrypt a private key using a GPG key from your keyring:
+
+```
+echo <your-private-key> | gpg -e --output private-key.gpg
+```
+
+Or, if you'd rather use a password to encrypt your keyfile, use this instead:
+
+```
+echo <your-private-key> | gpg -c --output private-key.gpg
+```
+
+The CLI also requires a JsonRPC endpoint for the blockchain you're interacting with. To easily provision this, create a `.env` file in the root of the repository and fill it in thusly:
 
 ```
 ENDPOINT=<ethRpcEndpoint>
-ETHERSCAN_API_KEY=<apikey>
-
 ```
 
-__`ETHERSCAN_API_KEY:`__ An API key for the version of etherscan you'll be verifying contracts on.
-__`ENDPOINT:`__ A working jsonRPC endpoint for the EVM-compliant blockchain you're interacting with.
+Finally, to verify a contract, you'll need an etherscan API key too. You can add this to your `.env` file thusly:
+
+```
+ETHERSCAN_API_KEY=<apikey>
+```
+
+NOTE: If you're not verifying contracts, you don't need to provide this environment variable at all.
 
 &nbsp;
 
