@@ -15,47 +15,71 @@ After cloning the repository, first install the dependencies:
 Then, to see the usage guide, run:
 
 ```
-> ./ptokens-deployer.js --help
+> ./cli.js --help
 ```
 
 Output:
 
 ```
 
-❍ pTokens ERC777 Deployer ❍
+❍  Upgradeable pToken ERC777 Contract Command Line Interface
 
   Copyright Provable Things 2021
   Questions: greg@oraclize.it
 
 ❍ Info:
 
-  A tool to aid with deployments of the upgradeable pToken ERC777 logic contract.
+  A tool to aid with deployments of & interactions with the upgradeable pToken ERC777 logic contract.
+
+  NOTE: Functions that make transactions require a private key. Please provide a GPG encrpyted file called
+    'private-key.gpg' containing your key in the root of the repository.
+
+  NOTE: The tool requires a '.env' file to exist in the root of the repository with the following info:
+    ENDPOINT=<rpc-endpoint-for-blochain-to-interact-with>
+
+  NOTE: To call the 'verifyPToken' function, the following extra environment variable is required:
+    ETHERSCAN_API_KEY=<api-key-for-automated-contract-verifications>
 
 ❍ Usage:
-  ptoken-deployer.js --help
-  ptoken-deployer.js --version
-  ptoken-deployer.js deployPToken
-  ptoken-deployer.js flattenContract
-  ptoken-deployer.js showSuggestedFees
-  ptoken-deployer.js verifyPToken <deployedAddress> <network>
-  ptoken-deployer.js getEncodedInitArgs <tokenName> <tokenSymbol> <adminAddress>
+  cli.js --help
+  cli.js --version
+  cli.js deployPToken
+  cli.js flattenContract
+  cli.js showSuggestedFees
+  cli.js showExistingContracts
+  cli.js verifyPToken <deployedAddress> <network>
+  cli.js getBalanceOf <deployedAddress> <ethAddress>
+  cli.js grantMinterRole <deployedAddress> <ethAddress>
+  cli.js revokeMinterRole <deployedAddress> <ethAddress>
+  cli.js getEncodedInitArgs <tokenName> <tokenSymbol> <adminAddress>
+  cli.js pegOut <deployedAddress> <amount> <recipient> [--userData=<hex>]
 
 ❍ Commands:
 
   showSuggestedFees     ❍ Show 'ethers.js' suggested fees.
   deployPToken          ❍ Deploy the pToken logic contract.
   verifyPToken          ❍ Verify a deployed pToken logic contract.
+  getBalanceOf          ❍ Get balance of <ethAddress> of pToken at <deployedAddress>.
   getEncodedInitArgs    ❍ Calculate the initializer function arguments in ABI encoded format.
+  pegOut                ❍ Redeem <amount> at <deployedAddress> with optional --userData=<hex>.
   flattenContract       ❍ Flatten the pToken contract in case manual verification is required.
+  grantMinterRole       ❍ Grant a minter role to <ethAddress> for pToken at <deployedAddress>.
+  revokeMinterRole      ❍ Revoke a minter role from <ethAddress> for pToken at <deployedAddress>.
+  showExistingContracts ❍ Show list of existing pToken logic contract addresses on various blockchains.
 
 ❍ Options:
-  --help              ❍ Show this message.
-  --version           ❍ Show tool version.
-  <tokenName>         ❍ The name of the pToken.
-  <tokenSymbol>       ❍ The symbol of the pToken.
-  <deployedAddress>   ❍ The ETH address of the deployed pToken.
-  <adminAddress>      ❍ The ETH address which administrates the pToken.
-  <network>           ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
+  --help                ❍ Show this message.
+  --version             ❍ Show tool version.
+  <ethAddress>          ❍ A valid ETH address.
+  <tokenName>           ❍ The name of the pToken.
+  <tokenSymbol>         ❍ The symbol of the pToken.
+  <deployedAddress>     ❍ The ETH address of the deployed pToken.
+  <recipient>           ❍ The recipient of the pegged out pTokens.
+  <adminAddress>        ❍ The ETH address to administrate the pToken.
+  --userData=<hex>      ❍ Optional user data in hex format [default: 0x].
+  <amount>              ❍ An amount in the most granular form of the token.
+  <network>             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
+
 
 ```
 

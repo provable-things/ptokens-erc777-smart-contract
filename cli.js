@@ -17,6 +17,7 @@ const { getEncodedInitArgs } = require('./lib/get-encoded-init-args')
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
 
 const HELP_ARG = '--help'
+const TOOL_NAME = 'cli.js'
 const PEG_OUT_CMD = 'pegOut'
 const AMOUNT_ARG = '<amount>'
 const VERSION_ARG = '--version'
@@ -24,7 +25,6 @@ const NETWORK_ARG = '<network>'
 const TOKEN_NAME_ARG = '<tokenName>'
 const ETH_ADDRESS_ARG = '<ethAddress>'
 const GET_BALANCE_CMD = 'getBalanceOf'
-const TOOL_NAME = 'ptoken-deployer.js'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
 const DEPLOY_PTOKEN_CMD = 'deployPToken'
 const VERIFY_PTOKEN_CMD = 'verifyPToken'
@@ -41,7 +41,7 @@ const USER_DATA_ARG = `${USER_DATA_OPTIONAL_ARG}=<hex>`
 const SHOW_EXISTING_CONTRACTS_CMD = 'showExistingContracts'
 
 const USAGE_INFO = `
-❍ pTokens ERC777 Deployer ❍
+❍ pTokens ERC777 Command Line Interface
 
   Copyright Provable Things 2021
   Questions: greg@oraclize.it
@@ -51,14 +51,12 @@ const USAGE_INFO = `
   A tool to aid with deployments of & interactions with the upgradeable pToken ERC777 logic contract.
 
   NOTE: Functions that make transactions require a private key. Please provide a GPG encrpyted file called
-        'private-key.gpg' containing your key in the root of the repository.
+   'private-key.gpg' containing your key in the root of the repository.
 
   NOTE: The tool requires a '.env' file to exist in the root of the repository with the following info:
-
     ENDPOINT=<rpc-endpoint-for-blochain-to-interact-with>
 
   NOTE: To call the '${VERIFY_PTOKEN_CMD}' function, the following extra environment variable is required:
-
     ETHERSCAN_API_KEY=<api-key-for-automated-contract-verifications>
 
 ❍ Usage:
