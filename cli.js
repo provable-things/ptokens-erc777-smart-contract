@@ -119,24 +119,22 @@ const USAGE_INFO = `
 
 const main = _ => {
   const CLI_ARGS = docopt(USAGE_INFO, { version })
-  if (CLI_ARGS[DEPLOY_PTOKEN_CMD]) {
-    return deployContract(CLI_ARGS[NO_GSN_OPTIONAL_ARG])
-  } else if (CLI_ARGS[VERIFY_CONTRACT_CMD]) {
-    return verifyContract(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[NETWORK_ARG])
-  } else if (CLI_ARGS[SHOW_SUGGESTED_FEES_CMD]) {
+  if (CLI_ARGS[SHOW_SUGGESTED_FEES_CMD]) {
     return showSuggestedFees()
-  } else if (CLI_ARGS[FLATTEN_CONTRACT_CMD]) {
-    return flattenContract(CLI_ARGS[NO_GSN_OPTIONAL_ARG])
+  } else if (CLI_ARGS[SHOW_WALLET_DETAILS_CMD]) {
+    return showWalletDetails()
   } else if (CLI_ARGS[SHOW_EXISTING_CONTRACTS_CMD]) {
     return showExistingPTokenContractAddresses()
+  } else if (CLI_ARGS[DEPLOY_PTOKEN_CMD]) {
+    return deployContract(CLI_ARGS[NO_GSN_OPTIONAL_ARG])
+  } else if (CLI_ARGS[FLATTEN_CONTRACT_CMD]) {
+    return flattenContract(CLI_ARGS[NO_GSN_OPTIONAL_ARG])
+  } else if (CLI_ARGS[GET_BALANCE_CMD]) {
+    return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[GRANT_ROLE_CMD]) {
     return grantMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[REVOKE_ROLE_CMD]) {
     return revokeMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
-  } else if (CLI_ARGS[GET_BALANCE_CMD]) {
-    return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
-  } else if (CLI_ARGS[SHOW_WALLET_DETAILS_CMD]) {
-    return showWalletDetails()
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
@@ -161,6 +159,12 @@ const main = _ => {
       CLI_ARGS[AMOUNT_ARG],
       CLI_ARGS[RECIPIENT_ARG],
       CLI_ARGS[USER_DATA_OPTIONAL_ARG],
+    )
+  } else if (CLI_ARGS[VERIFY_CONTRACT_CMD]) {
+    return verifyContract(
+      CLI_ARGS[DEPLOYED_ADDRESS_ARG],
+      CLI_ARGS[NETWORK_ARG],
+      CLI_ARGS[NO_GSN_OPTIONAL_ARG]
     )
   }
 }
