@@ -16,7 +16,7 @@ const { verifyContract } = require('./lib/verify-contract')
 const { flattenContract } = require('./lib/flatten-contract')
 const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
-const { getEncodedInitArgs } = require('./lib/get-encoded-init-args')
+const { showEncodedInitArgs } = require('./lib/get-encoded-init-args')
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
 
 const HELP_ARG = '--help'
@@ -43,9 +43,9 @@ const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
 const NO_GSN_ARG = `${NO_GSN_OPTIONAL_ARG}=<bool>`
+const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
-const GET_ENCODED_INIT_ARGS_CMD = 'getEncodedInitArgs'
 const USER_DATA_ARG = `${USER_DATA_OPTIONAL_ARG}=<hex>`
 const SHOW_EXISTING_CONTRACTS_CMD = 'showExistingContracts'
 
@@ -83,7 +83,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG} [${NO_GSN_ARG}]
-  ${TOOL_NAME} ${GET_ENCODED_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
+  ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
   ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} [${USER_DATA_ARG}]
 
 ❍ Commands:
@@ -93,7 +93,7 @@ const USAGE_INFO = `
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
   ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
-  ${GET_ENCODED_INIT_ARGS_CMD}    ❍ Calculate the initializer function arguments in ABI encoded format.
+  ${ENCODE_INIT_ARGS_CMD}        ❍ Calculate the initializer function arguments in ABI encoded format.
   ${PEG_OUT_CMD}                ❍ Redeem ${AMOUNT_ARG} at ${DEPLOYED_ADDRESS_ARG} with optional ${USER_DATA_ARG}.
   ${FLATTEN_CONTRACT_CMD}       ❍ Flatten the pToken contract in case manual verification is required.
   ${GRANT_ROLE_CMD}       ❍ Grant a minter role to ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
@@ -124,7 +124,7 @@ const main = _ => {
   } else if (CLI_ARGS[VERIFY_CONTRACT_CMD]) {
     return verifyContract(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[NETWORK_ARG])
   } else if (CLI_ARGS[SHOW_SUGGESTED_FEES_CMD]) {
-    return showSuggestedFees().then(console.table) // FIXME rm!
+    return showSuggestedFees()
   } else if (CLI_ARGS[FLATTEN_CONTRACT_CMD]) {
     return flattenContract(CLI_ARGS[NO_GSN_OPTIONAL_ARG])
   } else if (CLI_ARGS[SHOW_EXISTING_CONTRACTS_CMD]) {
@@ -137,13 +137,12 @@ const main = _ => {
     return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[SHOW_WALLET_DETAILS_CMD]) {
     return showWalletDetails()
-  } else if (CLI_ARGS[GET_ENCODED_INIT_ARGS_CMD]) {
-    return getEncodedInitArgs(
+  } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
+    return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
       CLI_ARGS[TOKEN_SYMBOL_ARG],
       CLI_ARGS[TOKEN_ADMIN_ADDRESS_ARG]
     )
-      .then(console.info) // FIXME rm!
   } else if (CLI_ARGS[TRANSFER_TOKEN_CMD]) {
     return transferToken(
       CLI_ARGS[DEPLOYED_ADDRESS_ARG],
