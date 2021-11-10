@@ -6,7 +6,6 @@ const {
   CONTRACT_ADMIN_ADDRESS,
   LOGIC_CONTRACT_ADDRESS,
 } = require('./test-constants')
-const Web3 = require('web3')
 const assert = require('assert')
 const rewire = require('rewire')
 const { silenceConsoleInfoOutput } = require('./test-utils')
@@ -29,7 +28,6 @@ describe('Testing Constructor Arg Encoder...', () => {
   })
 
   it('Should get encoded proxy constructor args', async () => {
-    const web3 = new Web3()
     const pTokenInitFxnCall = await getEncodedInitArgs(
       TOKEN_NAME,
       TOKEN_SYMBOL,
