@@ -210,3 +210,4 @@ Test output:
 ## :white_medium_square: To Do:
 
 [ ] Allow custom gas prices?
+[ ] Add tests for non-gsn version?

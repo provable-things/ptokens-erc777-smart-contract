@@ -12,8 +12,8 @@ const { approve } = require('./lib/approve.js')
 const { transferToken } = require('./lib/transfer-token')
 const { showBalanceOf } = require('./lib/get-balance-of')
 const { deployContract } = require('./lib/deploy-contract')
+const { verifyContract } = require('./lib/verify-contract')
 const { flattenContract } = require('./lib/flatten-contract')
-const { verifyPTokenContract } = require('./lib/verify-ptoken')
 const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
 const { getEncodedInitArgs } = require('./lib/get-encoded-init-args')
@@ -28,19 +28,21 @@ const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
 const RECIPIENT_ARG = '<recipient>'
 const TOKEN_NAME_ARG = '<tokenName>'
+const NO_GSN_OPTIONAL_ARG = '--noGSN'
 const SPENDER_ARG = '<spenderAddress>'
 const ETH_ADDRESS_ARG = '<ethAddress>'
 const GET_BALANCE_CMD = 'getBalanceOf'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
 const DEPLOY_PTOKEN_CMD = 'deployPToken'
-const VERIFY_PTOKEN_CMD = 'verifyPToken'
 const GRANT_ROLE_CMD = 'grantMinterRole'
 const REVOKE_ROLE_CMD = 'revokeMinterRole'
 const TRANSFER_TOKEN_CMD = 'transferToken'
 const USER_DATA_OPTIONAL_ARG = '--userData'
+const VERIFY_CONTRACT_CMD = 'verifyContract'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
+const NO_GSN_ARG = `${NO_GSN_OPTIONAL_ARG}=<bool>`
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
 const GET_ENCODED_INIT_ARGS_CMD = 'getEncodedInitArgs'
@@ -64,30 +66,30 @@ const USAGE_INFO = `
   NOTE: The tool requires a '.env' file to exist in the root of the repository with the following info:
     ENDPOINT=<rpc-endpoint-for-blochain-to-interact-with>
 
-  NOTE: To call the '${VERIFY_PTOKEN_CMD}' function, the following extra environment variable is required:
+  NOTE: To call the '${VERIFY_CONTRACT_CMD}' function, the following extra environment variable is required:
     ETHERSCAN_API_KEY=<api-key-for-automated-contract-verifications>
 
 ❍ Usage:
   ${TOOL_NAME} ${HELP_ARG}
   ${TOOL_NAME} ${VERSION_ARG}
-  ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD}
-  ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD}
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
   ${TOOL_NAME} ${SHOW_WALLET_DETAILS_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
-  ${TOOL_NAME} ${VERIFY_PTOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG}
+  ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD} [${NO_GSN_ARG}]
+  ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD} [${NO_GSN_ARG}]
   ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
+  ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG} [${NO_GSN_ARG}]
   ${TOOL_NAME} ${GET_ENCODED_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
   ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} [${USER_DATA_ARG}]
 
 ❍ Commands:
+  ${DEPLOY_PTOKEN_CMD}          ❍ Deploy the logic contract.
   ${SHOW_SUGGESTED_FEES_CMD}     ❍ Show 'ethers.js' suggested fees.
-  ${DEPLOY_PTOKEN_CMD}          ❍ Deploy the pToken logic contract.
-  ${VERIFY_PTOKEN_CMD}          ❍ Verify a deployed pToken logic contract.
+  ${VERIFY_CONTRACT_CMD}        ❍ Verify the deployed logic contract.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
   ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
@@ -118,20 +120,13 @@ const USAGE_INFO = `
 const main = _ => {
   const CLI_ARGS = docopt(USAGE_INFO, { version })
   if (CLI_ARGS[DEPLOY_PTOKEN_CMD]) {
-    return deployContract()
-  } else if (CLI_ARGS[VERIFY_PTOKEN_CMD]) {
-    return verifyPTokenContract(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[NETWORK_ARG])
-  } else if (CLI_ARGS[GET_ENCODED_INIT_ARGS_CMD]) {
-    return getEncodedInitArgs(
-      CLI_ARGS[TOKEN_NAME_ARG],
-      CLI_ARGS[TOKEN_SYMBOL_ARG],
-      CLI_ARGS[TOKEN_ADMIN_ADDRESS_ARG]
-    )
-      .then(console.info)
+    return deployContract(CLI_ARGS[NO_GSN_OPTIONAL_ARG])
+  } else if (CLI_ARGS[VERIFY_CONTRACT_CMD]) {
+    return verifyContract(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[NETWORK_ARG])
   } else if (CLI_ARGS[SHOW_SUGGESTED_FEES_CMD]) {
-    return showSuggestedFees().then(console.table)
+    return showSuggestedFees().then(console.table) // FIXME rm!
   } else if (CLI_ARGS[FLATTEN_CONTRACT_CMD]) {
-    return flattenContract()
+    return flattenContract(CLI_ARGS[NO_GSN_OPTIONAL_ARG])
   } else if (CLI_ARGS[SHOW_EXISTING_CONTRACTS_CMD]) {
     return showExistingPTokenContractAddresses()
   } else if (CLI_ARGS[GRANT_ROLE_CMD]) {
@@ -142,6 +137,13 @@ const main = _ => {
     return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[SHOW_WALLET_DETAILS_CMD]) {
     return showWalletDetails()
+  } else if (CLI_ARGS[GET_ENCODED_INIT_ARGS_CMD]) {
+    return getEncodedInitArgs(
+      CLI_ARGS[TOKEN_NAME_ARG],
+      CLI_ARGS[TOKEN_SYMBOL_ARG],
+      CLI_ARGS[TOKEN_ADMIN_ADDRESS_ARG]
+    )
+      .then(console.info) // FIXME rm!
   } else if (CLI_ARGS[TRANSFER_TOKEN_CMD]) {
     return transferToken(
       CLI_ARGS[DEPLOYED_ADDRESS_ARG],
