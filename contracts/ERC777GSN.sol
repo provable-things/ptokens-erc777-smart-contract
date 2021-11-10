@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/GSN/GSNRecipientUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract ERC777GSNUpgreadable is Initializable, OwnableUpgradeable, GSNRecipientUpgradeable, ERC777Upgradeable {
+contract ERC777GSNUpgradeable is Initializable, OwnableUpgradeable, GSNRecipientUpgradeable, ERC777Upgradeable {
   using ECDSAUpgradeable for bytes32;
   uint256 constant GSN_RATE_UNIT = 10**18;
 
@@ -19,7 +19,7 @@ contract ERC777GSNUpgreadable is Initializable, OwnableUpgradeable, GSNRecipient
   address public gsnFeeTarget;
   uint256 public gsnExtraGas; // the gas cost of _postRelayedCall()
 
-  function __ERC777GSNUpgreadable_init(
+  function __ERC777GSNUpgradeable_init(
     address _gsnTrustedSigner,
     address _gsnFeeTarget
   )

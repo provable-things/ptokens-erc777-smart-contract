@@ -7,12 +7,12 @@ import "./ERC777GSN.sol";
 import "./ERC777WithAdminOperator.sol";
 
 /**
- * @dev Note that the ERC777Upgradeable contract itself is inherited via the ERC777GSNUpgreadable contract.
+ * @dev Note that the ERC777Upgradeable contract itself is inherited via the ERC777GSNUpgradeable contract.
  */
 contract PToken is
     Initializable,
     AccessControlUpgradeable,
-    ERC777GSNUpgreadable,
+    ERC777GSNUpgradeable,
     ERC777WithAdminOperatorUpgreadable
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -34,7 +34,7 @@ contract PToken is
         address[] memory defaultOperators;
         __AccessControl_init();
         __ERC777_init(tokenName, tokenSymbol, defaultOperators);
-        __ERC777GSNUpgreadable_init(defaultAdmin, defaultAdmin);
+        __ERC777GSNUpgradeable_init(defaultAdmin, defaultAdmin);
         __ERC777WithAdminOperatorUpgreadable_init(defaultAdmin);
         _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
     }
@@ -116,11 +116,11 @@ contract PToken is
         return hasRole(MINTER_ROLE, _account);
     }
 
-    function _msgSender() internal view override(ContextUpgradeable, ERC777GSNUpgreadable) returns (address payable) {
+    function _msgSender() internal view override(ContextUpgradeable, ERC777GSNUpgradeable) returns (address payable) {
         return GSNRecipientUpgradeable._msgSender();
   }
 
-    function _msgData() internal view override(ContextUpgradeable, ERC777GSNUpgreadable) returns (bytes memory) {
+    function _msgData() internal view override(ContextUpgradeable, ERC777GSNUpgradeable) returns (bytes memory) {
         return GSNRecipientUpgradeable._msgData();
     }
 }
