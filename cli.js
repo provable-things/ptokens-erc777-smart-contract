@@ -11,8 +11,8 @@ const { version } = require('./package.json')
 const { approve } = require('./lib/approve.js')
 const { transferToken } = require('./lib/transfer-token')
 const { showBalanceOf } = require('./lib/get-balance-of')
+const { deployContract } = require('./lib/deploy-contract')
 const { flattenContract } = require('./lib/flatten-contract')
-const { deployPTokenContract } = require('./lib/deploy-ptoken')
 const { verifyPTokenContract } = require('./lib/verify-ptoken')
 const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
@@ -112,12 +112,13 @@ const USAGE_INFO = `
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
   ${SPENDER_ARG}      ❍ An ETH address that may spend tokens on your behalf.
   ${NETWORK_ARG}             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
+  ${NO_GSN_ARG}        ❍ Use the version of the pToken with no GasStationNetwork logic [default: false].
 `
 
 const main = _ => {
   const CLI_ARGS = docopt(USAGE_INFO, { version })
   if (CLI_ARGS[DEPLOY_PTOKEN_CMD]) {
-    return deployPTokenContract()
+    return deployContract()
   } else if (CLI_ARGS[VERIFY_PTOKEN_CMD]) {
     return verifyPTokenContract(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[NETWORK_ARG])
   } else if (CLI_ARGS[GET_ENCODED_INIT_ARGS_CMD]) {
