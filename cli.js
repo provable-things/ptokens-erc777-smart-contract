@@ -85,7 +85,6 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} [${USER_DATA_ARG}]
 
 ❍ Commands:
-
   ${SHOW_SUGGESTED_FEES_CMD}     ❍ Show 'ethers.js' suggested fees.
   ${DEPLOY_PTOKEN_CMD}          ❍ Deploy the pToken logic contract.
   ${VERIFY_PTOKEN_CMD}          ❍ Verify a deployed pToken logic contract.
