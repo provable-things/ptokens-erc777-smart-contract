@@ -5,7 +5,11 @@ const {
 } = require('./lib/constants')
 const { assoc } = require('ramda')
 
+require('hardhat-erc1820')
+require('@nomiclabs/hardhat-web3')
+require('@nomiclabs/hardhat-waffle')
 require('@nomiclabs/hardhat-etherscan')
+require('@openzeppelin/hardhat-upgrades')
 
 const SUPPORTED_NETWORKS = [
   'rinkeby',

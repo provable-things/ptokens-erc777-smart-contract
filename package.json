@@ -5,7 +5,7 @@
   "main": "cli.js",
   "scripts": {
     "compile": "npx hardhat compile",
-    "test": "npx mocha lib-tests"
+    "test": "npx hardhat test"
   },
   "repository": {
     "type": "git",
@@ -36,15 +36,18 @@
   },
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.7",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/contracts-upgradeable": "^3.4.1",
+    "@openzeppelin/hardhat-upgrades": "^1.12.0",
     "@openzeppelin/test-helpers": "^0.5.10",
-    "@openzeppelin/truffle-upgrades": "^1.5.0",
     "@truffle/contract": "^4.1.10",
     "chai": "^4.2.0",
     "docopt": "^0.6.2",
     "dotenv": "^10.0.0",
     "ethers": "^5.5.1",
     "hardhat": "^2.6.7",
+    "hardhat-erc1820": "^0.1.0",
     "ramda": "^0.27.0",
     "rewire": "^5.0.0",
     "truffle": "^5.1.67",

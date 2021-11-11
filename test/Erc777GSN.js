@@ -1,17 +1,33 @@
 const {
+  silenceConsoleOutput,
+  fixSignaturePerEIP155,
+} = require('./test-utils')
+const {
   runRelayer,
   fundRecipient,
   deployRelayHub,
 } = require('@openzeppelin/gsn-helpers')
-const { expect } = require('chai')
-const pTokenArtifact = artifacts.require('PToken')
-const { fixSignaturePerEIP155 } = require('./test-utils')
+const assert = require('assert')
+const { BigNumber } = require('ethers')
+const Web3Contract = require('web3-eth-contract')
+const { getAbi } = require('../lib/get-contract-artifacts')
 const { GSNDevProvider } = require('@openzeppelin/gsn-provider')
-const { deployProxy } = require('@openzeppelin/truffle-upgrades')
 
-contract('pToken/ERC777GSN', ([ owner, other, ownerAddress, relayerAddress, trustedSigner, feeTarget ]) => {
-  let relayer
-  let pTokenContract
+describe('pToken ERC777GSN Tests', () => {
+  silenceConsoleOutput()
+  const AMOUNT = 12345
+  let relayer,
+    otherAddress,
+    ownerAddress,
+    trustedSigner,
+    relayerAddress,
+    pTokenContract,
+    feeTargetAddress
+
+  before(async () => {
+    await deployRelayHub(web3)
+    relayer = await runRelayer(web3, { quiet: true })
+  })
 
   const getApprovalData = async data => {
     const feeRate = `${1e18}`
@@ -33,39 +49,41 @@ contract('pToken/ERC777GSN', ([ owner, other, ownerAddress, relayerAddress, trus
     return web3.eth.abi.encodeParameters(['uint256', 'bytes'], [feeRate, signature])
   }
 
-  before(async () => {
-    await deployRelayHub(web3)
-    relayer = await runRelayer(web3, { quiet: true })
+  beforeEach(async () => {
+    [ ownerAddress, otherAddress, trustedSigner, feeTargetAddress, relayerAddress ] = await web3.eth.getAccounts()
+    const contractFactory = await ethers.getContractFactory('contracts/pToken.sol:PToken')
+    const ethersContract = await upgrades.deployProxy(contractFactory, ['Test', 'TST', ownerAddress])
+    pTokenContract = new Web3Contract(await getAbi(), ethersContract.address)
+    pTokenContract.setProvider(web3.currentProvider)
+    await pTokenContract.methods.grantMinterRole(ownerAddress).send({ from: ownerAddress, gas: 300000 })
+    await pTokenContract.methods.mint(ownerAddress, '1000000000000000000').send({ from: ownerAddress })
+    await pTokenContract.methods.setTrustedSigner(trustedSigner).send({ from: ownerAddress })
+    await pTokenContract.methods.setFeeTarget(feeTargetAddress).send({ from: ownerAddress })
+    await fundRecipient(web3, { recipient: pTokenContract._address, amount: web3.utils.toWei('1') })
+    const gsnProvider = new GSNDevProvider(
+      web3.currentProvider,
+      { ownerAddress, relayerAddress, approveFunction: getApprovalData },
+    )
+    pTokenContract.setProvider(gsnProvider)
   })
 
   after(() => relayer.kill())
 
-  beforeEach(async () => {
-    const pTokenContractTemp = await deployProxy(pTokenArtifact, ['Test', 'TST', owner])
-    await pTokenContractTemp.grantMinterRole(owner, { from: owner, gas: 300000 })
-    await pTokenContractTemp.mint(owner, '1000000000000000000', { from: owner })
-    await pTokenContractTemp.setTrustedSigner(trustedSigner, { from: owner })
-    await pTokenContractTemp.setFeeTarget(feeTarget, { from: owner })
-    await fundRecipient(web3, { recipient: pTokenContractTemp.address, amount: web3.utils.toWei('1') })
-    const gsnProvider = new GSNDevProvider(web3.currentProvider, {
-      ownerAddress,
-      relayerAddress,
-      approveFunction: getApprovalData
-    })
-    const pToken2 = artifacts.require('PToken.sol')
-    pToken2.setProvider(gsnProvider)
-    pTokenContract = await pToken2.at(pTokenContractTemp.address)
-  })
-
   it('Should transfer via relayer', async () => {
-    const tx = await pTokenContract.transfer(other, 12345, { from: owner, gas: '50000' })
-    expect(tx.receipt.from).to.equal(relayerAddress.toLowerCase())
-    expect(tx.receipt.to).to.not.equal(pTokenContract.address.toLowerCase())
-    expect(await pTokenContract.balanceOf(other)).to.be.bignumber.eq('12345')
+    const tx = await pTokenContract.methods
+      .transfer(otherAddress, `${AMOUNT}`)
+      .send({ from: ownerAddress, gas: '50000' })
+    const contractBalance = await pTokenContract.methods.balanceOf(otherAddress).call()
+    assert.strictEqual(contractBalance, `${AMOUNT}`)
+    assert.strictEqual(tx.from, relayerAddress.toLowerCase())
+    assert.notStrictEqual(tx.to, pTokenContract._address.toLowerCase())
   })
 
   it('When transferring via relay, it should pay fee in token', async () => {
-    await pTokenContract.transfer(other, 12345, { from: owner, gasPrice: '1', gas: '50000' })
-    expect(await pTokenContract.balanceOf(feeTarget)).to.be.bignumber.greaterThan('150000')
+    await pTokenContract.methods
+      .transfer(otherAddress, AMOUNT)
+      .send({ from: ownerAddress, gas: '50000' })
+    const balance = await pTokenContract.methods.balanceOf(feeTargetAddress).call()
+    assert(BigNumber.from(balance).gt(BigNumber.from(15000)))
   })
 })

@@ -107,3 +107,8 @@ module.exports.getContractWithAddress = (_web3, _artifact, _constructorParams) =
       )
       .catch(reject)
   )
+
+module.exports.silenceConsoleOutput = _ => {
+  /* eslint-disable-next-line no-empty-function */
+  console.info = __ => {}
+}
