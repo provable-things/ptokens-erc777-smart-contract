@@ -1,10 +1,9 @@
 pragma solidity ^0.6.2;
 
+import "./ERC777GSN.sol";
+import "./ERC777WithAdminOperatorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-
-import "./ERC777GSN.sol";
-import "./ERC777WithAdminOperator.sol";
 
 /**
  * @dev Note that the ERC777Upgradeable contract itself is inherited via the ERC777GSNUpgradeable contract.
@@ -13,7 +12,7 @@ contract PToken is
     Initializable,
     AccessControlUpgradeable,
     ERC777GSNUpgradeable,
-    ERC777WithAdminOperatorUpgreadable
+    ERC777WithAdminOperatorUpgradeable
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -35,7 +34,7 @@ contract PToken is
         __AccessControl_init();
         __ERC777_init(tokenName, tokenSymbol, defaultOperators);
         __ERC777GSNUpgradeable_init(defaultAdmin, defaultAdmin);
-        __ERC777WithAdminOperatorUpgreadable_init(defaultAdmin);
+        __ERC777WithAdminOperatorUpgradeable_init(defaultAdmin);
         _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
     }
 
