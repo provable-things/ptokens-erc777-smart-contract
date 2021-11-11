@@ -9,6 +9,7 @@ const { docopt } = require('docopt')
 const { pegOut } = require('./lib/peg-out')
 const { version } = require('./package.json')
 const { approve } = require('./lib/approve.js')
+const { convertStringToBool } = require('./lib/utils')
 const { transferToken } = require('./lib/transfer-token')
 const { showBalanceOf } = require('./lib/get-balance-of')
 const { deployContract } = require('./lib/deploy-contract')
@@ -28,12 +29,12 @@ const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
 const RECIPIENT_ARG = '<recipient>'
 const TOKEN_NAME_ARG = '<tokenName>'
-const NO_GSN_OPTIONAL_ARG = '--noGSN'
 const SPENDER_ARG = '<spenderAddress>'
 const ETH_ADDRESS_ARG = '<ethAddress>'
 const GET_BALANCE_CMD = 'getBalanceOf'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
 const GRANT_ROLE_CMD = 'grantMinterRole'
+const WITH_GSN_OPTIONAL_ARG = '--withGSN'
 const REVOKE_ROLE_CMD = 'revokeMinterRole'
 const DEPLOY_PTOKEN_CMD = 'deployContract'
 const TRANSFER_TOKEN_CMD = 'transferToken'
@@ -42,10 +43,10 @@ const VERIFY_CONTRACT_CMD = 'verifyContract'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
-const NO_GSN_ARG = `${NO_GSN_OPTIONAL_ARG}=<bool>`
 const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
+const WITH_GSN_ARG = `${WITH_GSN_OPTIONAL_ARG}=<bool>`
 const USER_DATA_ARG = `${USER_DATA_OPTIONAL_ARG}=<hex>`
 const SHOW_EXISTING_CONTRACTS_CMD = 'showExistingContracts'
 
@@ -75,19 +76,19 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
   ${TOOL_NAME} ${SHOW_WALLET_DETAILS_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
-  ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD} [${NO_GSN_ARG}]
-  ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD} [${NO_GSN_ARG}]
+  ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD} [${WITH_GSN_ARG}]
+  ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
-  ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG} [${NO_GSN_ARG}]
   ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
+  ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} [${USER_DATA_ARG}]
 
 ❍ Commands:
-  ${DEPLOY_PTOKEN_CMD}          ❍ Deploy the logic contract.
+  ${DEPLOY_PTOKEN_CMD}        ❍ Deploy the logic contract.
   ${SHOW_SUGGESTED_FEES_CMD}     ❍ Show 'ethers.js' suggested fees.
   ${VERIFY_CONTRACT_CMD}        ❍ Verify the deployed logic contract.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
@@ -113,8 +114,8 @@ const USAGE_INFO = `
   ${USER_DATA_ARG}      ❍ Optional user data in hex format [default: 0x].
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
   ${SPENDER_ARG}      ❍ An ETH address that may spend tokens on your behalf.
+  ${WITH_GSN_ARG}      ❍ Use the version of the pToken with GasStationNetwork logic [default: true].
   ${NETWORK_ARG}             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
-  ${NO_GSN_ARG}        ❍ Use the version of the pToken with no GasStationNetwork logic [default: false].
 `
 
 const main = _ => {
@@ -126,9 +127,9 @@ const main = _ => {
   } else if (CLI_ARGS[SHOW_EXISTING_CONTRACTS_CMD]) {
     return showExistingPTokenContractAddresses()
   } else if (CLI_ARGS[DEPLOY_PTOKEN_CMD]) {
-    return deployContract(CLI_ARGS[NO_GSN_OPTIONAL_ARG])
+    return deployContract(convertStringToBool(CLI_ARGS[WITH_GSN_OPTIONAL_ARG]))
   } else if (CLI_ARGS[FLATTEN_CONTRACT_CMD]) {
-    return flattenContract(CLI_ARGS[NO_GSN_OPTIONAL_ARG])
+    return flattenContract(convertStringToBool(CLI_ARGS[WITH_GSN_OPTIONAL_ARG]))
   } else if (CLI_ARGS[GET_BALANCE_CMD]) {
     return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[GRANT_ROLE_CMD]) {
@@ -164,7 +165,7 @@ const main = _ => {
     return verifyContract(
       CLI_ARGS[DEPLOYED_ADDRESS_ARG],
       CLI_ARGS[NETWORK_ARG],
-      CLI_ARGS[NO_GSN_OPTIONAL_ARG]
+      convertStringToBool(CLI_ARGS[WITH_GSN_OPTIONAL_ARG]),
     )
   }
 }
