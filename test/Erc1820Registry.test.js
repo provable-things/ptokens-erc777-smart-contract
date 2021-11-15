@@ -1,24 +1,19 @@
+const {
+  ZERO_ADDRESS,
+  PTOKNE_CONTRACT_PATH,
+} = require('./test-constants')
 const assert = require('assert')
 const { BigNumber } = require('ethers')
+const { assertTransferEvent } = require('./test-utils')
 
 describe('pToken ERC777OptionalAckOnMint Tests', () => {
   let pTokenContract, ownerAddress, nonOwnerAddress
   const AMOUNT = 12345
-  const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
   const ERC777_RECIPIENT_CONTRACT_PATH = 'contracts/MockERC777Recipient.sol:MockErc777Recipient'
-
-  const getTransferEventFromReceipt = _receipts =>
-    _receipts.events.filter(_receipt => _receipt.event === 'Transfer')[0]
-
-  const assertTransferEvent = (_event, _from, _to, _amount) => {
-    assert.strictEqual(_event.args.from, _from)
-    assert.strictEqual(_event.args.to, _to)
-    assert(_event.args.value.eq(BigNumber.from(_amount)))
-  }
 
   beforeEach(async () => {
     [ ownerAddress, nonOwnerAddress ] = await web3.eth.getAccounts()
-    const contractFactory = await ethers.getContractFactory('contracts/pToken.sol:PToken')
+    const contractFactory = await ethers.getContractFactory(PTOKNE_CONTRACT_PATH)
     pTokenContract = await upgrades.deployProxy(contractFactory, ['Test', 'TST', ownerAddress])
     await pTokenContract.grantMinterRole(ownerAddress)
   })
@@ -26,7 +21,7 @@ describe('pToken ERC777OptionalAckOnMint Tests', () => {
   it('Should mint to an externally owned account', async () => {
     const tx = await pTokenContract['mint(address,uint256)'](nonOwnerAddress, AMOUNT)
     const receipt = await tx.wait()
-    assertTransferEvent(getTransferEventFromReceipt(receipt), ZERO_ADDRESS, nonOwnerAddress, AMOUNT)
+    await assertTransferEvent(receipt, ZERO_ADDRESS, nonOwnerAddress, AMOUNT)
     const contractBalance = await pTokenContract.balanceOf(nonOwnerAddress)
     assert(contractBalance.eq(BigNumber.from(AMOUNT)))
   })
@@ -56,7 +51,7 @@ describe('pToken ERC777OptionalAckOnMint Tests', () => {
     const addressToMintTo = recipient.address
     const tx = await pTokenContract['mint(address,uint256)'](addressToMintTo, AMOUNT)
     const receipt = await tx.wait()
-    assertTransferEvent(getTransferEventFromReceipt(receipt), ZERO_ADDRESS, addressToMintTo, AMOUNT)
+    await assertTransferEvent(receipt, ZERO_ADDRESS, addressToMintTo, AMOUNT)
     const pTokenContractBalance = await pTokenContract.balanceOf(addressToMintTo)
     assert(pTokenContractBalance.eq(BigNumber.from(AMOUNT)))
     assert.strictEqual(await recipient.tokenReceivedCalled(), true)

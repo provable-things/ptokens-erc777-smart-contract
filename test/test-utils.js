@@ -1,3 +1,7 @@
+const assert = require('assert')
+const { prop } = require('ramda')
+const { BigNumber } = require('ethers')
+
 /* eslint-disable no-undef */
 module.exports.shortenEthAddress = _ethAddress =>
   `${_ethAddress.slice(0, 6)}...${_ethAddress.slice(-4)}`
@@ -107,7 +111,24 @@ module.exports.getContractWithAddress = (_web3, _artifact, _constructorParams) =
       )
       .catch(reject)
   )
-
+/* eslint-disable-next-line no-return-assign */
 module.exports.silenceConsoleInfoOutput = _ =>
   /* eslint-disable-next-line no-empty-function */
   console.info = __ => {}
+
+const getTransferEventFromReceipt = _receipt =>
+  new Promise((resolve, reject) => {
+    const EVENT_NAME = 'Transfer'
+    const transferEvents = _receipt.events.filter(_event => _event.event === EVENT_NAME)
+    return transferEvents.length <= 0
+      ? reject(new Error(`No ${EVENT_NAME} event in receipt!`))
+      : resolve(prop(0, transferEvents))
+  })
+
+module.exports.assertTransferEvent = (_receipt, _from, _to, _amount) =>
+  getTransferEventFromReceipt(_receipt)
+    .then(_event => {
+      assert.strictEqual(_event.args.from, _from)
+      assert.strictEqual(_event.args.to, _to)
+      assert(_event.args.value.eq(BigNumber.from(_amount)))
+    })
