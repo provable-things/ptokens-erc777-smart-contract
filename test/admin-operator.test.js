@@ -50,8 +50,8 @@ describe('Admin Operator Tests', () => {
     const amount = '12345'
     const contract = pTokenContract.connect(adminOperator)
     const tx = await contract.adminTransfer(owner.address, nonOwner.address, amount, EMPTY_DATA, EMPTY_DATA)
-    const receipt = await tx.wait()
-    await assertTransferEvent(receipt, owner.address, nonOwner.address, amount)
+    const { events } = await tx.wait()
+    await assertTransferEvent(events, owner.address, nonOwner.address, amount)
     const balance = await pTokenContract.balanceOf(nonOwner.address)
     assert(balance.eq(BigNumber.from(amount)))
   })

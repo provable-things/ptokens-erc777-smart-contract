@@ -19,8 +19,8 @@ describe('pToken ERC1820 Tests', () => {
 
   it('Should mint to an externally owned account', async () => {
     const tx = await pTokenContract['mint(address,uint256)'](nonOwnerAddress, AMOUNT)
-    const receipt = await tx.wait()
-    await assertTransferEvent(receipt, ZERO_ADDRESS, nonOwnerAddress, AMOUNT)
+    const { events } = await tx.wait()
+    await assertTransferEvent(events, ZERO_ADDRESS, nonOwnerAddress, AMOUNT)
     const contractBalance = await pTokenContract.balanceOf(nonOwnerAddress)
     assert(contractBalance.eq(BigNumber.from(AMOUNT)))
   })
@@ -49,8 +49,8 @@ describe('pToken ERC1820 Tests', () => {
     await recipient.initERC1820()
     const addressToMintTo = recipient.address
     const tx = await pTokenContract['mint(address,uint256)'](addressToMintTo, AMOUNT)
-    const receipt = await tx.wait()
-    await assertTransferEvent(receipt, ZERO_ADDRESS, addressToMintTo, AMOUNT)
+    const { events } = await tx.wait()
+    await assertTransferEvent(events, ZERO_ADDRESS, addressToMintTo, AMOUNT)
     const pTokenContractBalance = await pTokenContract.balanceOf(addressToMintTo)
     assert(pTokenContractBalance.eq(BigNumber.from(AMOUNT)))
     assert.strictEqual(await recipient.tokenReceivedCalled(), true)
