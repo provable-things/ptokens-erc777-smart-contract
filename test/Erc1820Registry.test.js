@@ -1,19 +1,19 @@
 const {
   ZERO_ADDRESS,
-  PTOKNE_CONTRACT_PATH,
+  PTOKEN_CONTRACT_PATH,
 } = require('./test-constants')
 const assert = require('assert')
 const { BigNumber } = require('ethers')
 const { assertTransferEvent } = require('./test-utils')
 
-describe('pToken ERC777OptionalAckOnMint Tests', () => {
-  let pTokenContract, ownerAddress, nonOwnerAddress
+describe('pToken ERC1820 Tests', () => {
   const AMOUNT = 12345
+  let pTokenContract, ownerAddress, nonOwnerAddress
   const ERC777_RECIPIENT_CONTRACT_PATH = 'contracts/MockERC777Recipient.sol:MockErc777Recipient'
 
   beforeEach(async () => {
     [ ownerAddress, nonOwnerAddress ] = await web3.eth.getAccounts()
-    const contractFactory = await ethers.getContractFactory(PTOKNE_CONTRACT_PATH)
+    const contractFactory = await ethers.getContractFactory(PTOKEN_CONTRACT_PATH)
     pTokenContract = await upgrades.deployProxy(contractFactory, ['Test', 'TST', ownerAddress])
     await pTokenContract.grantMinterRole(ownerAddress)
   })
