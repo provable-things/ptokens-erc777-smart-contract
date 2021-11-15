@@ -126,82 +126,67 @@ NOTE: If you're not verifying contracts, you don't need to provide this environm
 
 &nbsp;
 
-### :guardsman: Repository Tests:
+### :guardsman: Tests:
 
-After installing dependenies, run:
-
-```
-> npm run test
-```
-
-Output:
+1) Install dependencies:
 
 ```
-
-  Testing Constructor Arg Encoder...
-    ✓ Should get encoded pToken init fxn call
-    ✓ Should get encoded proxy constructor args
-    ✓ Should get encoded constructor args
-
-
-  3 passing (18ms)
-
+❍ npm ci
 ```
 
-&nbsp;
-
-### :guardsman: Smart-Contract Tests:
-
-1) Start truffle via:
+2) Run the tests:
 
 ```
-❍ npx truffle develop
-```
-
-2) Run the tests via:
-
-```
-❍ truffle_develop> test
+❍ npm run tests
 ```
 
 Test output:
 
 ```
 
-  Contract: PToken/ERC777OptionalAckOnMint
-    ✓ Should mint to an externally owned account (210ms)
-    ✓ Should not mint to a contract that does not support ERC1820 (853ms)
-    ✓ Should mint to a contract that supports ERC1820, and call `tokensReceivedHook` (307ms)
+  pToken ERC777GSN Tests
+    ✓ Should transfer via relayer (352ms)
+    ✓ When transferring via relay, it should pay fee in token (183ms)
 
-  Contract: pToken/ERC777GSN
-    ✓ Should transfer via relayer (551ms)
-    ✓ When transferring via relay, it should pay fee in token (323ms)
+  Admin Operator Tests
+    ✓ Non-owner cannot change the admin operator address
+    ✓ Admin operator CAN change the admin operator address
+    ✓ `adminTransfer()` should fail if the caller is not the admin operator
+    ✓ `adminTransfer()` should transfer tokens
 
-  Contract: pToken/ERC777WithAdminOperator
-    ✓ OWNER cannot change the admin operator (64ms)
-    ✓ Admin operator can change the admin operator address (128ms)
-    ✓ adminTransfer() should fail if the caller is not the admin operator (81ms)
-    ✓ adminTransfer() should transfer tokens (132ms)
+  pToken ERC1820 Tests
+    ✓ Should mint to an externally owned account
+    ✓ Should not mint to a contract that does not support ERC1820 (46ms)
+    ✓ Should mint to a contract that supports ERC1820, and call `tokensReceivedHook` (69ms)
 
-  Contract: pToken
-    ✓ `redeem()` function should burn tokens & emit correct events (496ms)
-    ✓ `mint()` w/out data should mint tokens & emit correct events (92ms)
-    ✓ `mint()` w/out data should return true if successful (82ms)
-    ✓ `mint()` cannot mint to zero address (63ms)
-    ✓ 'mint()' only 0xE3F4...4d15 can mint (63ms)
-    ✓ `mint()` w/ data should mint tokens & emit correct events (81ms)
-    ✓ 0xE3F4...4d15 has 'admin' and 'minter' role
-    ✓ 0xE3F4...4d15 can grant 'minter' role (82ms)
-    ✓ 0xE3F4...4d15 can revoke 'minter' role (158ms)
-    ✓ newly added minter should be able to mint tokens & emit correct events (134ms)
-    ✓ Should get redeem fxn call data correctly (621ms)
-    ✓ Should grant minter role to EOA (123ms)
-    ✓ Should upgrade contract (450ms)
-    ✓ User balance should remain after contract upgrade (357ms)
-    ✓ Should revert when minting tokens with the contract address as the recipient (47ms)
+  Testing Constructor Arg Encoder...
+    ✓ Should get encoded pToken init fxn call
+    ✓ Should get encoded proxy constructor args
+    ✓ Should get encoded constructor args
+
+  pToken Tests
+    Roles Tests
+      ✓ Owner has 'admin' and 'minter' role
+      ✓ Owner can grant `minter` role
+      ✓ Owner can revoke `minter` role
+      ✓ Newly added minter should be able to mint tokens & emit correct events (44ms)
+      ✓ Should grant minter role to EOA
+    Mint Tests
+      ✓ `mint()` w/out data should mint tokens & emit correct events
+      ✓ `mint()` w/out data should return true if successful
+      ✓ `mint()` cannot mint to zero address
+      ✓ `mint()` only owner can mint
+      ✓ `mint()` w/ data should mint tokens & emit correct events
+      ✓ Should revert when minting tokens with the contract address as the recipient
+    Redeem Tests
+      ✓ `redeem()` function should burn tokens & emit correct events (283ms)
+      ✓ Should get redeem fxn call data correctly
+    Contract Upgrades Tests
+      ✓ Should upgrade contract (88ms)
+      ✓ User balance should remain after contract upgrade (69ms)
 
 
-  24 passing (21s)
+  27 passing (5s)
 
 ```
 
