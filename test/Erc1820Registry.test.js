@@ -1,52 +1,64 @@
-/* eslint-disable no-unused-expressions */
-const {
-  expectEvent,
-  expectRevert,
-} = require('@openzeppelin/test-helpers')
 const assert = require('assert')
-const { expect } = require('chai')
-const PToken = artifacts.require('PToken.sol')
-const Mock777Recipient = artifacts.require('Mock777Recipient')
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-const { deployProxy } = require('@openzeppelin/truffle-upgrades')
+const { BigNumber } = require('ethers')
 
-contract('PToken/ERC777OptionalAckOnMint', ([ OWNER, NON_OWNER ]) => {
-  let pTokenContract
-  const GAS_LIMIT = 6e6
+describe('pToken ERC777OptionalAckOnMint Tests', () => {
+  let pTokenContract, ownerAddress, nonOwnerAddress
+  const AMOUNT = 12345
+  const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+  const ERC777_RECIPIENT_CONTRACT_PATH = 'contracts/MockERC777Recipient.sol:MockErc777Recipient'
+
+  const getTransferEventFromReceipt = _receipts =>
+    _receipts.events.filter(_receipt => _receipt.event === 'Transfer')[0]
+
+  const assertTransferEvent = (_event, _from, _to, _amount) => {
+    assert.strictEqual(_event.args.from, _from)
+    assert.strictEqual(_event.args.to, _to)
+    assert(_event.args.value.eq(BigNumber.from(_amount)))
+  }
 
   beforeEach(async () => {
-    assert(OWNER !== NON_OWNER)
-    pTokenContract = await deployProxy(PToken, [ 'TEST', 'TST', OWNER ])
-    await pTokenContract.grantMinterRole(OWNER, { from: OWNER, gas: GAS_LIMIT })
+    [ ownerAddress, nonOwnerAddress ] = await web3.eth.getAccounts()
+    const contractFactory = await ethers.getContractFactory('contracts/pToken.sol:PToken')
+    pTokenContract = await upgrades.deployProxy(contractFactory, ['Test', 'TST', ownerAddress])
+    await pTokenContract.grantMinterRole(ownerAddress)
   })
 
   it('Should mint to an externally owned account', async () => {
-    const tx = await pTokenContract.mint(NON_OWNER, '12345', { from: OWNER })
-    await expectEvent(
-      tx.receipt,
-      'Transfer',
-      { value: '12345', from: ZERO_ADDRESS, to: NON_OWNER }
-    )
-    expect(await pTokenContract.balanceOf(NON_OWNER)).to.be.bignumber.eq('12345')
+    const tx = await pTokenContract['mint(address,uint256)'](nonOwnerAddress, AMOUNT)
+    const receipt = await tx.wait()
+    assertTransferEvent(getTransferEventFromReceipt(receipt), ZERO_ADDRESS, nonOwnerAddress, AMOUNT)
+    const contractBalance = await pTokenContract.balanceOf(nonOwnerAddress)
+    assert(contractBalance.eq(BigNumber.from(AMOUNT)))
   })
 
+  const getErc777RecipientContract = _ =>
+    ethers
+      .getContractFactory(ERC777_RECIPIENT_CONTRACT_PATH)
+      .then(_factory => _factory.deploy())
+      .then(_contract => Promise.all([ _contract, _contract.deployTransaction.wait() ]))
+      .then(([ _contract ]) => _contract)
+
   it('Should not mint to a contract that does not support ERC1820', async () => {
-    const recipient = await Mock777Recipient.new()
-    const mintTo = recipient.address
-    await expectRevert(
-      pTokenContract.mint(mintTo, '12345', { from: OWNER }),
-      /* eslint-disable-next-line max-len */
-      'ERC777: token recipient contract has no implementer for ERC777TokensRecipient -- Reason given: ERC777: token recipient contract has no implementer for ERC777TokensRecipient.'
-    )
+    const mockRecipient = await getErc777RecipientContract()
+    const addressToMintTo = mockRecipient.address
+    try {
+      await pTokenContract['mint(address,uint256)'](addressToMintTo, AMOUNT)
+      assert.fail('Should not have succeeded!')
+    } catch (_err) {
+      const expectedErr = 'ERC777: token recipient contract has no implementer for ERC777TokensRecipient'
+      assert(_err.message.includes(expectedErr))
+    }
   })
 
   it('Should mint to a contract that supports ERC1820, and call `tokensReceivedHook`', async () => {
-    const recipient = await Mock777Recipient.new()
+    const recipient = await getErc777RecipientContract()
     await recipient.initERC1820()
-    const mintTo = recipient.address
-    const tx = await pTokenContract.mint(mintTo, '12345', { from: OWNER })
-    await expectEvent(tx.receipt, 'Transfer', { value: '12345', from: ZERO_ADDRESS, to: mintTo })
-    expect(await pTokenContract.balanceOf(mintTo)).to.be.bignumber.eq('12345')
-    expect(await recipient.tokenReceivedCalled()).to.be.true
+    const addressToMintTo = recipient.address
+    const tx = await pTokenContract['mint(address,uint256)'](addressToMintTo, AMOUNT)
+    const receipt = await tx.wait()
+    assertTransferEvent(getTransferEventFromReceipt(receipt), ZERO_ADDRESS, addressToMintTo, AMOUNT)
+    const pTokenContractBalance = await pTokenContract.balanceOf(addressToMintTo)
+    assert(pTokenContractBalance.eq(BigNumber.from(AMOUNT)))
+    assert.strictEqual(await recipient.tokenReceivedCalled(), true)
   })
 })
