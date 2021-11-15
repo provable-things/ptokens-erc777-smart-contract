@@ -1,6 +1,7 @@
 const assert = require('assert')
 const { prop } = require('ramda')
 const { BigNumber } = require('ethers')
+const { PTOKEN_CONTRACT_PATH } = require('./test-constants')
 
 /* eslint-disable no-undef */
 module.exports.shortenEthAddress = _ethAddress =>
@@ -132,3 +133,8 @@ module.exports.assertTransferEvent = (_receipt, _from, _to, _amount) =>
       assert.strictEqual(_event.args.to, _to)
       assert(_event.args.value.eq(BigNumber.from(_amount)))
     })
+
+module.exports.getPTokenContract = _initArgs =>
+  ethers
+    .getContractFactory(PTOKEN_CONTRACT_PATH)
+    .then(_factory => upgrades.deployProxy(_factory, _initArgs))

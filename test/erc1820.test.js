@@ -1,10 +1,10 @@
 const {
-  ZERO_ADDRESS,
-  PTOKEN_CONTRACT_PATH,
-} = require('./test-constants')
+  getPTokenContract,
+  assertTransferEvent,
+} = require('./test-utils')
 const assert = require('assert')
 const { BigNumber } = require('ethers')
-const { assertTransferEvent } = require('./test-utils')
+const { ZERO_ADDRESS } = require('./test-constants')
 
 describe('pToken ERC1820 Tests', () => {
   const AMOUNT = 12345
@@ -13,8 +13,7 @@ describe('pToken ERC1820 Tests', () => {
 
   beforeEach(async () => {
     [ ownerAddress, nonOwnerAddress ] = await web3.eth.getAccounts()
-    const contractFactory = await ethers.getContractFactory(PTOKEN_CONTRACT_PATH)
-    pTokenContract = await upgrades.deployProxy(contractFactory, ['Test', 'TST', ownerAddress])
+    pTokenContract = await getPTokenContract(['Test', 'TST', ownerAddress])
     await pTokenContract.grantMinterRole(ownerAddress)
   })
 

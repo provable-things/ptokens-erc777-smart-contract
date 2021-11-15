@@ -1,18 +1,17 @@
 const {
-  EMPTY_DATA,
-  PTOKEN_CONTRACT_PATH,
-} = require('./test-constants')
+  getPTokenContract,
+  assertTransferEvent
+} = require('./test-utils')
 const assert = require('assert')
 const { BigNumber } = require('ethers')
-const { assertTransferEvent } = require('./test-utils')
+const { EMPTY_DATA } = require('./test-constants')
 
 describe('Admin Operator Tests', () => {
   let owner, nonOwner, adminOperator, pTokenContract
 
   beforeEach(async () => {
     [ owner, nonOwner, adminOperator ] = await ethers.getSigners()
-    const contractFactory = await ethers.getContractFactory(PTOKEN_CONTRACT_PATH)
-    pTokenContract = await upgrades.deployProxy(contractFactory, ['Test', 'TST', owner.address])
+    pTokenContract = await getPTokenContract([ 'Test', 'TST', owner.address ])
     await pTokenContract.grantMinterRole(owner.address)
     await pTokenContract['mint(address,uint256)'](owner.address, 100000)
     await pTokenContract.setAdminOperator(adminOperator.address)
