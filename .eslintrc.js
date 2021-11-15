@@ -18,7 +18,6 @@ module.exports = {
   globals: {
     'web3': false,
     'ethers': false,
-    'contract': false,
     'artifacts': false,
     'upgrades': false,
   },
