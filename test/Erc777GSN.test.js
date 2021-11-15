@@ -1,6 +1,6 @@
 const {
-  silenceConsoleOutput,
   fixSignaturePerEIP155,
+  silenceConsoleInfoOutput,
 } = require('./test-utils')
 const {
   runRelayer,
@@ -14,7 +14,7 @@ const { getAbi } = require('../lib/get-contract-artifacts')
 const { GSNDevProvider } = require('@openzeppelin/gsn-provider')
 
 describe('pToken ERC777GSN Tests', () => {
-  silenceConsoleOutput()
+  silenceConsoleInfoOutput()
   const AMOUNT = 12345
   let relayer,
     otherAddress,
