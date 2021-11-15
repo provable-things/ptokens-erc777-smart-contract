@@ -6,7 +6,7 @@ const assert = require('assert')
 const { BigNumber } = require('ethers')
 const { assertTransferEvent } = require('./test-utils')
 
-describe('Admin Operator Tests...', () => {
+describe('Admin Operator Tests', () => {
   let owner, nonOwner, adminOperator, pTokenContract
 
   beforeEach(async () => {
