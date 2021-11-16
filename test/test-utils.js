@@ -48,15 +48,6 @@ module.exports.fixSignaturePerEIP155 = _signature => {
     : _signature.substring(0, 130) + (bitcoinElectrumWalletMagicNumber + 1).toString(16)
 }
 
-module.exports.getContractWithAddress = (_web3, _artifact, _constructorParams) =>
-  new Promise((resolve, reject) =>
-    _artifact
-      .new(..._constructorParams)
-      .then(({ contract: { _jsonInterface, _address } }) =>
-        resolve({ contract: new _web3.eth.Contract(_jsonInterface, _address), address: _address })
-      )
-      .catch(reject)
-  )
 /* eslint-disable-next-line no-return-assign */
 module.exports.silenceConsoleInfoOutput = _ =>
   /* eslint-disable-next-line no-empty-function */
