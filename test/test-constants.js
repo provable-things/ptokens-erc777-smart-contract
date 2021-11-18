@@ -1,6 +1,7 @@
 module.exports = {
   EMPTY_DATA: '0x',
   TOKEN_SYMBOL: 'TKN',
+  ADDRESS_PROP: 'address',
   TOKEN_NAME: 'pTokens TKN',
   PTOKEN_CONTRACT_PATH: 'contracts/pToken.sol:PToken',
   ZERO_ADDRESS: '0x0000000000000000000000000000000000000000',
