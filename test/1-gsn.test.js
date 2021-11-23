@@ -3,6 +3,11 @@ const {
   silenceConsoleInfoOutput,
 } = require('./test-utils')
 const {
+  TOKEN_NAME,
+  TOKEN_SYMBOL,
+  ORIGIN_CHAIN_ID,
+} = require('./test-constants')
+const {
   runRelayer,
   fundRecipient,
   deployRelayHub,
@@ -52,7 +57,10 @@ describe('pToken ERC777GSN Tests', () => {
   beforeEach(async () => {
     [ ownerAddress, otherAddress, trustedSigner, feeTargetAddress, relayerAddress ] = await web3.eth.getAccounts()
     const contractFactory = await ethers.getContractFactory('contracts/pToken.sol:PToken')
-    const ethersContract = await upgrades.deployProxy(contractFactory, ['Test', 'TST', ownerAddress])
+    const ethersContract = await upgrades.deployProxy(
+      contractFactory,
+      [TOKEN_NAME, TOKEN_SYMBOL, ownerAddress, ORIGIN_CHAIN_ID],
+    )
     pTokenContract = new Web3Contract(await getAbi(), ethersContract.address)
     pTokenContract.setProvider(web3.currentProvider)
     await pTokenContract.methods.grantMinterRole(ownerAddress).send({ from: ownerAddress, gas: 300000 })

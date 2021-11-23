@@ -15,6 +15,7 @@ contract PToken is
     ERC777WithAdminOperatorUpgradeable
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes4 public ORIGIN_CHAIN_ID;
 
     event Redeem(
         address indexed redeemer,
@@ -26,7 +27,8 @@ contract PToken is
     function initialize(
         string memory tokenName,
         string memory tokenSymbol,
-        address defaultAdmin
+        address defaultAdmin,
+        bytes4 originChainId
     )
         public initializer
     {
@@ -36,6 +38,7 @@ contract PToken is
         __ERC777GSNUpgradeable_init(defaultAdmin, defaultAdmin);
         __ERC777WithAdminOperatorUpgradeable_init(defaultAdmin);
         _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
+        ORIGIN_CHAIN_ID = originChainId;
     }
 
     function mint(

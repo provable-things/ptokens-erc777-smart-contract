@@ -4,7 +4,10 @@ const {
 } = require('ramda')
 const {
   EMPTY_DATA,
+  TOKEN_NAME,
   ZERO_ADDRESS,
+  TOKEN_SYMBOL,
+  ORIGIN_CHAIN_ID,
 } = require('./test-constants')
 const {
   assertMintEvent,
@@ -25,7 +28,7 @@ describe('pToken Tests', () => {
 
   beforeEach(async () => {
     [ OWNER, NON_OWNER, MINTER, ...OTHERS ] = await ethers.getSigners()
-    CONTRACT = await getPTokenContract([ 'pToken', 'pTOK', OWNER.address ])
+    CONTRACT = await getPTokenContract([ TOKEN_NAME, TOKEN_SYMBOL, OWNER.address, ORIGIN_CHAIN_ID ])
     await CONTRACT.grantMinterRole(OWNER.address)
   })
 
