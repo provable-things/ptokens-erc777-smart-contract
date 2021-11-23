@@ -32,6 +32,12 @@ describe('pToken Tests', () => {
     await CONTRACT.grantMinterRole(OWNER.address)
   })
 
+  describe('Setup Tests', () => {
+    it('Origin chain id should be set correctly on deployment', async () => {
+      assert.strictEqual(await CONTRACT.ORIGIN_CHAIN_ID(), ORIGIN_CHAIN_ID)
+    })
+  })
+
   describe('Roles Tests', () => {
     it('Owner has \'admin\' and \'minter\' role', async () => {
       assert(await CONTRACT.hasMinterRole(OWNER.address))
