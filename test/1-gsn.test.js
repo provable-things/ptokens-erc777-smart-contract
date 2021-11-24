@@ -6,6 +6,7 @@ const {
   TOKEN_NAME,
   TOKEN_SYMBOL,
   ORIGIN_CHAIN_ID,
+  DESTINATION_CHAIN_ID,
 } = require('./test-constants')
 const {
   runRelayer,
@@ -59,7 +60,7 @@ describe('pToken ERC777GSN Tests', () => {
     const contractFactory = await ethers.getContractFactory('contracts/pToken.sol:PToken')
     const ethersContract = await upgrades.deployProxy(
       contractFactory,
-      [TOKEN_NAME, TOKEN_SYMBOL, ownerAddress, ORIGIN_CHAIN_ID],
+      [TOKEN_NAME, TOKEN_SYMBOL, ownerAddress, ORIGIN_CHAIN_ID, [ DESTINATION_CHAIN_ID ]],
     )
     pTokenContract = new Web3Contract(await getAbi(), ethersContract.address)
     pTokenContract.setProvider(web3.currentProvider)

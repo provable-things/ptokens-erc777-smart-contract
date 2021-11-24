@@ -6,6 +6,7 @@ const {
   TOKEN_NAME,
   TOKEN_SYMBOL,
   ORIGIN_CHAIN_ID,
+  DESTINATION_CHAIN_ID,
 } = require('./test-constants')
 const assert = require('assert')
 const { BigNumber } = require('ethers')
@@ -16,7 +17,13 @@ describe('Admin Operator Tests', () => {
 
   beforeEach(async () => {
     [ owner, nonOwner, adminOperator ] = await ethers.getSigners()
-    pTokenContract = await getPTokenContract([ TOKEN_NAME, TOKEN_SYMBOL, owner.address, ORIGIN_CHAIN_ID ])
+    pTokenContract = await getPTokenContract([
+      TOKEN_NAME,
+      TOKEN_SYMBOL,
+      owner.address,
+      ORIGIN_CHAIN_ID,
+      [ DESTINATION_CHAIN_ID ],
+    ])
     await pTokenContract.grantMinterRole(owner.address)
     await pTokenContract['mint(address,uint256)'](owner.address, 100000)
     await pTokenContract.setAdminOperator(adminOperator.address)

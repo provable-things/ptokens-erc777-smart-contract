@@ -8,6 +8,7 @@ const {
   ZERO_ADDRESS,
   ADDRESS_PROP,
   ORIGIN_CHAIN_ID,
+  DESTINATION_CHAIN_ID,
 } = require('./test-constants')
 const assert = require('assert')
 const { prop } = require('ramda')
@@ -29,7 +30,13 @@ describe('pToken ERC1820 Tests', () => {
     const [ OWNER, NON_OWNER ] = await ethers.getSigners()
     OWNER_ADDRESS = prop(ADDRESS_PROP, OWNER)
     NON_OWNER_ADDRESS = prop(ADDRESS_PROP, NON_OWNER)
-    PTOKEN_CONTRACT = await getPTokenContract([ TOKEN_NAME, TOKEN_SYMBOL, OWNER_ADDRESS, ORIGIN_CHAIN_ID ])
+    PTOKEN_CONTRACT = await getPTokenContract([
+      TOKEN_NAME,
+      TOKEN_SYMBOL,
+      OWNER_ADDRESS,
+      ORIGIN_CHAIN_ID,
+      [ DESTINATION_CHAIN_ID ],
+    ])
     await PTOKEN_CONTRACT.grantMinterRole(OWNER_ADDRESS)
   })
 

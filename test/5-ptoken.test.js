@@ -8,6 +8,7 @@ const {
   ZERO_ADDRESS,
   TOKEN_SYMBOL,
   ORIGIN_CHAIN_ID,
+  DESTINATION_CHAIN_ID,
 } = require('./test-constants')
 const {
   assertMintEvent,
@@ -28,13 +29,107 @@ describe('pToken Tests', () => {
 
   beforeEach(async () => {
     [ OWNER, NON_OWNER, MINTER, ...OTHERS ] = await ethers.getSigners()
-    CONTRACT = await getPTokenContract([ TOKEN_NAME, TOKEN_SYMBOL, OWNER.address, ORIGIN_CHAIN_ID ])
+    CONTRACT = await getPTokenContract([
+      TOKEN_NAME,
+      TOKEN_SYMBOL,
+      OWNER.address,
+      ORIGIN_CHAIN_ID,
+      [ DESTINATION_CHAIN_ID ],
+    ])
     await CONTRACT.grantMinterRole(OWNER.address)
   })
 
-  describe('Setup Tests', () => {
+  describe('Initialization Tests', () => {
     it('Origin chain id should be set correctly on deployment', async () => {
       assert.strictEqual(await CONTRACT.ORIGIN_CHAIN_ID(), ORIGIN_CHAIN_ID)
+    })
+
+    it('Should have destination chain ID set in mapping', async () => {
+      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID))
+    })
+  })
+
+  describe('Setting & Unsetting Destination Chain IDs Tests', () => {
+    const DESTINATION_CHAIN_ID_1 = '0xd3adb33f'
+    const DESTINATION_CHAIN_ID_2 = '0xc0ffeeee'
+    const DESTINATION_CHAIN_IDS = [ DESTINATION_CHAIN_ID_1, DESTINATION_CHAIN_ID_2 ]
+
+    it('Only minter can add supported chain ID', async () => {
+      assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      try {
+        await CONTRACT.connect(NON_OWNER).addSupportedDestinationChainId(DESTINATION_CHAIN_ID_1)
+        assert.fail('Should not have succeeded!')
+      } catch (_err) {
+        const expectedError = 'Caller is not a minter'
+        assert(_err.message.includes(expectedError))
+        assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      }
+    })
+
+    it('Should add a supported destination chain ID', async () => {
+      assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      await CONTRACT.addSupportedDestinationChainId(DESTINATION_CHAIN_ID_1)
+      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+    })
+
+    it('Should add multiple supported destination chain IDs', async () => {
+      assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_2))
+      await CONTRACT.addSupportedDestinationChainIds(DESTINATION_CHAIN_IDS)
+      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_2))
+    })
+
+    it('Should revert when adding supprted destination chain ID if already supported', async () => {
+      await CONTRACT.addSupportedDestinationChainId(DESTINATION_CHAIN_ID_1)
+      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      try {
+        await CONTRACT.addSupportedDestinationChainId(DESTINATION_CHAIN_ID_1)
+        assert.fail('Should not have succeeded!')
+      } catch (_err) {
+        const expectedError = 'Destination chain ID already supported'
+        assert(_err.message.includes(expectedError))
+      }
+    })
+
+    it('Only minter can remove supported chain ID', async () => {
+      await CONTRACT.addSupportedDestinationChainIds(DESTINATION_CHAIN_IDS)
+      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      try {
+        await CONTRACT.connect(NON_OWNER).removeSupportedDestinationChainId(DESTINATION_CHAIN_ID_1)
+        assert.fail('Should not have succeeded!')
+      } catch (_err) {
+        const expectedError = 'Caller is not a minter'
+        assert(_err.message.includes(expectedError))
+        assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      }
+    })
+
+    it('Should remove a supported destination chain ID', async () => {
+      await CONTRACT.addSupportedDestinationChainId(DESTINATION_CHAIN_ID_1)
+      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      await CONTRACT.removeSupportedDestinationChainId(DESTINATION_CHAIN_ID_1)
+      assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+    })
+
+    it('Should remove multiple supported destination chain IDs', async () => {
+      await CONTRACT.addSupportedDestinationChainIds(DESTINATION_CHAIN_IDS)
+      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_2))
+      await CONTRACT.removeSupportedDestinationChainIds(DESTINATION_CHAIN_IDS)
+      assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_2))
+    })
+
+    it('Should revert when removing supprted destination chain ID if already not supported', async () => {
+      assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID_1))
+      try {
+        await CONTRACT.removeSupportedDestinationChainId(DESTINATION_CHAIN_ID_1)
+        assert.fail('Should not have succeeded!')
+      } catch (_err) {
+        const expectedError = 'Destination chain ID already not supported'
+        assert(_err.message.includes(expectedError))
+      }
     })
   })
 
@@ -168,7 +263,11 @@ describe('pToken Tests', () => {
       await mintTokensToAccounts(CONTRACT, [ OWNER, ...OTHERS ], AMOUNT, OWNER)
       const recipientBalanceAfter = await getTokenBalance(redeemer.address, CONTRACT)
       assert(recipientBalanceAfter.eq(BigNumber.from(AMOUNT)))
-      const tx = await CONTRACT.connect(redeemer)['redeem(uint256,string)'](redeemAmount, ASSET_RECIPIENT)
+      const tx = await CONTRACT.connect(redeemer)['redeem(uint256,string,bytes4)'](
+        redeemAmount,
+        ASSET_RECIPIENT,
+        DESTINATION_CHAIN_ID,
+      )
       const { events } = await tx.wait()
       const recipientBalanceAfterRedeem = await getTokenBalance(redeemer.address, CONTRACT)
       assert.strictEqual(parseInt(recipientBalanceAfterRedeem), AMOUNT - redeemAmount)
@@ -182,10 +281,33 @@ describe('pToken Tests', () => {
       const redeemAddress = '33L5hhKLhcNqN7oHfeW3evYXkr9VxyBRRi'
       const result = new ethers.utils
         .Interface(CONTRACT.interface.fragments)
-        .encodeFunctionData('redeem(uint256,string)', [ AMOUNT, redeemAddress ])
+        .encodeFunctionData('redeem(uint256,string,bytes4)', [ AMOUNT, redeemAddress, DESTINATION_CHAIN_ID ])
       /* eslint-disable-next-line max-len */
-      const expectedResult = '0x24b76fd500000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
+      const expectedResult = '0xcd61f0b60000000000000000000000000000000000000000000000000000000000000539000000000000000000000000000000000000000000000000000000000000006000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002233334c3568684b4c68634e714e376f4866655733657659586b723956787942525269000000000000000000000000000000000000000000000000000000000000'
       assert.strictEqual(result, expectedResult)
+    })
+
+    it('Redeems should revert if destination chain ID is not supported', async () => {
+      await CONTRACT.removeSupportedDestinationChainId(DESTINATION_CHAIN_ID)
+      assert(!await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID))
+      const redeemAmount = 666
+      const redeemer = OTHERS[3]
+      const recipientBalanceBefore = await getTokenBalance(redeemer.address, CONTRACT)
+      assert(recipientBalanceBefore.eq(BigNumber.from(0)))
+      await mintTokensToAccounts(CONTRACT, [ OWNER, ...OTHERS ], AMOUNT, OWNER)
+      const recipientBalanceAfter = await getTokenBalance(redeemer.address, CONTRACT)
+      assert(recipientBalanceAfter.eq(BigNumber.from(AMOUNT)))
+      try {
+        await CONTRACT.connect(redeemer)['redeem(uint256,string,bytes4)'](
+          redeemAmount,
+          ASSET_RECIPIENT,
+          DESTINATION_CHAIN_ID,
+        )
+        assert.fail('Should not have succeeded!')
+      } catch (_err) {
+        const expectedError = 'Destination chain ID not supported!'
+        assert(_err.message.includes(expectedError))
+      }
     })
   })
 

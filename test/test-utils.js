@@ -1,7 +1,11 @@
+const {
+  ORIGIN_CHAIN_ID,
+  PTOKEN_CONTRACT_PATH,
+  DESTINATION_CHAIN_ID,
+} = require('./test-constants')
 const assert = require('assert')
 const { prop } = require('ramda')
 const { BigNumber } = require('ethers')
-const { PTOKEN_CONTRACT_PATH } = require('./test-constants')
 
 module.exports.getTokenBalance = (_address, _contract) =>
   _contract.balanceOf(_address)
@@ -21,6 +25,8 @@ module.exports.assertRedeemEvent = (_events, _redeemer, _redeemAmount, _assetRec
   assert.strictEqual(event.args.redeemer, _redeemer)
   assert.strictEqual(parseInt(event.args.value), _redeemAmount)
   assert.strictEqual(event.args.underlyingAssetRecipient, _assetRecipient)
+  assert.strictEqual(event.args.originChainId, ORIGIN_CHAIN_ID)
+  assert.strictEqual(event.args.destinationChainId, DESTINATION_CHAIN_ID)
 }
 
 module.exports.assertBurnEvent = (_logs, _redeemer, _operator, _amount, _data, _operatorData) => {
