@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable max-len */
 
 require('dotenv').config()
 const {
@@ -40,6 +41,7 @@ const DEPLOY_PTOKEN_CMD = 'deployContract'
 const TRANSFER_TOKEN_CMD = 'transferToken'
 const USER_DATA_OPTIONAL_ARG = '--userData'
 const VERIFY_CONTRACT_CMD = 'verifyContract'
+const ORIGIN_CHAIN_ID_ARG = '<originChainId>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
@@ -47,6 +49,7 @@ const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
 const WITH_GSN_ARG = `${WITH_GSN_OPTIONAL_ARG}=<bool>`
+const DESTINATION_CHAIN_ID_ARG = '<destinationChainId>'
 const USER_DATA_ARG = `${USER_DATA_OPTIONAL_ARG}=<hex>`
 const SHOW_EXISTING_CONTRACTS_CMD = 'showExistingContracts'
 
@@ -83,9 +86,9 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
-  ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG}
   ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} [${USER_DATA_ARG}]
+  ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG} ${ORIGIN_CHAIN_ID_ARG} ${DESTINATION_CHAIN_ID_ARG}...
 
 ❍ Commands:
   ${DEPLOY_PTOKEN_CMD}        ❍ Deploy the logic contract.
@@ -107,9 +110,11 @@ const USAGE_INFO = `
   ${VERSION_ARG}             ❍ Show tool version.
   ${ETH_ADDRESS_ARG}          ❍ A valid ETH address.
   ${TOKEN_NAME_ARG}           ❍ The name of the pToken.
+  ${DESTINATION_CHAIN_ID_ARG}  ❍ A destination chain ID.
   ${TOKEN_SYMBOL_ARG}         ❍ The symbol of the pToken.
   ${DEPLOYED_ADDRESS_ARG}     ❍ The ETH address of the deployed pToken.
   ${RECIPIENT_ARG}           ❍ The recipient of the pegged out pTokens.
+  ${ORIGIN_CHAIN_ID_ARG}       ❍ The origin chain ID of this pToken contract.
   ${TOKEN_ADMIN_ADDRESS_ARG}        ❍ The ETH address to administrate the pToken.
   ${USER_DATA_ARG}      ❍ Optional user data in hex format [default: 0x].
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
@@ -140,7 +145,9 @@ const main = _ => {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
       CLI_ARGS[TOKEN_SYMBOL_ARG],
-      CLI_ARGS[TOKEN_ADMIN_ADDRESS_ARG]
+      CLI_ARGS[TOKEN_ADMIN_ADDRESS_ARG],
+      CLI_ARGS[ORIGIN_CHAIN_ID_ARG],
+      CLI_ARGS[DESTINATION_CHAIN_ID_ARG],
     )
   } else if (CLI_ARGS[TRANSFER_TOKEN_CMD]) {
     return transferToken(
@@ -165,9 +172,13 @@ const main = _ => {
     return verifyContract(
       CLI_ARGS[DEPLOYED_ADDRESS_ARG],
       CLI_ARGS[NETWORK_ARG],
+      CLI_ARGS[ORIGIN_CHAIN_ID_ARG],
+      CLI_ARGS[DESTINATION_CHAIN_ID_ARG],
       convertStringToBool(CLI_ARGS[WITH_GSN_OPTIONAL_ARG]),
     )
   }
 }
 
 main().catch(_err => console.error('✘', _err.message))
+
+// TODO add addSupprted & removeSupported etc (use plural in CLI and check if single passed and abstract that away.
