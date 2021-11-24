@@ -16,6 +16,7 @@ contract PTokenDummyUpgrade is
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes4 public ORIGIN_CHAIN_ID;
+    mapping(bytes4 => bool) public SUPPORTED_DESTINATION_CHAIN_IDS;
 
     event Redeem(
         address indexed redeemer,

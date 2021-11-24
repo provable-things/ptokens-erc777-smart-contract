@@ -16,19 +16,23 @@ contract PToken is
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes4 public ORIGIN_CHAIN_ID;
+    mapping(bytes4 => bool) public SUPPORTED_DESTINATION_CHAIN_IDS;
 
     event Redeem(
         address indexed redeemer,
         uint256 value,
         string underlyingAssetRecipient,
-        bytes userData
+        bytes userData,
+        bytes4 originChainId,
+        bytes4 destinationChainId
     );
 
     function initialize(
         string memory tokenName,
         string memory tokenSymbol,
         address defaultAdmin,
-        bytes4 originChainId
+        bytes4 originChainId,
+        bytes4[] memory destinationChainIds
     )
         public initializer
     {
@@ -39,6 +43,70 @@ contract PToken is
         __ERC777WithAdminOperatorUpgradeable_init(defaultAdmin);
         _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         ORIGIN_CHAIN_ID = originChainId;
+        for (uint256 i = 0; i < destinationChainIds.length; i++) {
+            SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainIds[i]] = true;
+        }
+    }
+
+    modifier onlyMinter {
+        require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
+        _;
+    }
+
+    function addSupportedDestinationChainId(
+        bytes4 destinationChainId
+    )
+        public
+        onlyMinter
+        returns (bool)
+    {
+        require(
+            !SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId],
+            "Destination chain ID already supported"
+        );
+        SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId] = true;
+        return true;
+    }
+
+    function addSupportedDestinationChainIds(
+        bytes4[] calldata destinationChainIds
+    )
+        external
+        onlyMinter
+        returns (bool)
+    {
+        for (uint256 i = 0; i < destinationChainIds.length; i++) {
+            addSupportedDestinationChainId(destinationChainIds[i]);
+        }
+        return true;
+    }
+
+    function removeSupportedDestinationChainId(
+        bytes4 destinationChainId
+    )
+        public
+        onlyMinter
+        returns (bool)
+    {
+        require(
+            SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId],
+            "Destination chain ID already not supported"
+        );
+        SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId] = false;
+        return true;
+    }
+
+    function removeSupportedDestinationChainIds(
+        bytes4[] calldata destinationChainIds
+    )
+        external
+        onlyMinter
+        returns (bool)
+    {
+        for (uint256 i = 0; i < destinationChainIds.length; i++) {
+            removeSupportedDestinationChainId(destinationChainIds[i]);
+        }
+        return true;
     }
 
     function mint(
@@ -59,34 +127,50 @@ contract PToken is
         bytes memory operatorData
     )
         public
+        onlyMinter
         returns (bool)
     {
-        require(recipient != address(this) , "Recipient cannot be the token contract address!");
-        require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
+        require(
+            recipient != address(this) ,
+            "Recipient cannot be the token contract address!"
+        );
         _mint(recipient, value, userData, operatorData);
         return true;
     }
 
     function redeem(
         uint256 amount,
-        string calldata underlyingAssetRecipient
+        string calldata underlyingAssetRecipient,
+        bytes4 destinationChainId
     )
         external
         returns (bool)
     {
-        redeem(amount, "", underlyingAssetRecipient);
+        redeem(amount, "", underlyingAssetRecipient, destinationChainId);
         return true;
     }
 
     function redeem(
         uint256 amount,
         bytes memory userData,
-        string memory underlyingAssetRecipient
+        string memory underlyingAssetRecipient,
+        bytes4 destinationChainId
     )
         public
     {
+        require(
+            SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId],
+            "Destination chain ID not supported!"
+        );
         _burn(_msgSender(), amount, userData, "");
-        emit Redeem(_msgSender(), amount, underlyingAssetRecipient, userData);
+        emit Redeem(
+            _msgSender(),
+            amount,
+            underlyingAssetRecipient,
+            userData,
+            ORIGIN_CHAIN_ID,
+            destinationChainId
+        );
     }
 
     function operatorRedeem(
@@ -94,7 +178,8 @@ contract PToken is
         uint256 amount,
         bytes calldata userData,
         bytes calldata operatorData,
-        string calldata underlyingAssetRecipient
+        string calldata underlyingAssetRecipient,
+        bytes4 destinationChainId
     )
         external
     {
@@ -103,7 +188,7 @@ contract PToken is
             "ERC777: caller is not an operator for holder"
         );
         _burn(account, amount, userData, operatorData);
-        emit Redeem(account, amount, underlyingAssetRecipient, userData);
+        emit Redeem(account, amount, underlyingAssetRecipient, userData, ORIGIN_CHAIN_ID, destinationChainId);
     }
 
     function grantMinterRole(address _account) external {
@@ -118,11 +203,21 @@ contract PToken is
         return hasRole(MINTER_ROLE, _account);
     }
 
-    function _msgSender() internal view override(ContextUpgradeable, ERC777GSNUpgradeable) returns (address payable) {
+    function _msgSender()
+        internal
+        view
+        override(ContextUpgradeable, ERC777GSNUpgradeable)
+        returns (address payable)
+    {
         return GSNRecipientUpgradeable._msgSender();
-  }
+    }
 
-    function _msgData() internal view override(ContextUpgradeable, ERC777GSNUpgradeable) returns (bytes memory) {
+    function _msgData()
+        internal
+        view
+        override(ContextUpgradeable, ERC777GSNUpgradeable)
+        returns (bytes memory)
+    {
         return GSNRecipientUpgradeable._msgData();
     }
 }
