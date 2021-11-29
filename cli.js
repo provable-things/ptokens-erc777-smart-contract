@@ -49,6 +49,7 @@ const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
 const WITH_GSN_ARG = `${WITH_GSN_OPTIONAL_ARG}=<bool>`
+const DESTINATION_CHAIN_ID_ARG = '<destinationChainId>'
 const USER_DATA_ARG = `${USER_DATA_OPTIONAL_ARG}=<hex>`
 const SHOW_EXISTING_CONTRACTS_CMD = 'showExistingContracts'
 
@@ -86,8 +87,8 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG} [${WITH_GSN_ARG}]
-  ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} [${USER_DATA_ARG}]
   ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG} ${ORIGIN_CHAIN_ID_ARG}
+  ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} ${DESTINATION_CHAIN_ID_ARG} [${USER_DATA_ARG}]
 
 ❍ Commands:
   ${DEPLOY_PTOKEN_CMD}        ❍ Deploy the logic contract.
@@ -97,12 +98,12 @@ const USAGE_INFO = `
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
   ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
   ${ENCODE_INIT_ARGS_CMD}        ❍ Calculate the initializer function arguments in ABI encoded format.
-  ${PEG_OUT_CMD}                ❍ Redeem ${AMOUNT_ARG} at ${DEPLOYED_ADDRESS_ARG} with optional ${USER_DATA_ARG}.
   ${FLATTEN_CONTRACT_CMD}       ❍ Flatten the pToken contract in case manual verification is required.
   ${GRANT_ROLE_CMD}       ❍ Grant a minter role to ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${REVOKE_ROLE_CMD}      ❍ Revoke a minter role from ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${APPROVE_CMD}               ❍ Approve a ${SPENDER_ARG} to spend ${AMOUNT_ARG} tokens at ${DEPLOYED_ADDRESS_ARG}.
   ${SHOW_EXISTING_CONTRACTS_CMD} ❍ Show list of existing pToken logic contract addresses on various blockchains.
+  ${PEG_OUT_CMD}                ❍ Redeem ${AMOUNT_ARG} at ${DEPLOYED_ADDRESS_ARG} to ${DESTINATION_CHAIN_ID_ARG} with optional ${USER_DATA_ARG}.
 
 ❍ Options:
   ${HELP_ARG}                ❍ Show this message.
@@ -116,6 +117,7 @@ const USAGE_INFO = `
   ${TOKEN_ADMIN_ADDRESS_ARG}        ❍ The ETH address to administrate the pToken.
   ${USER_DATA_ARG}      ❍ Optional user data in hex format [default: 0x].
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
+  ${DESTINATION_CHAIN_ID_ARG}  ❍ A destination chain ID as a 'bytes4' solidity type.
   ${SPENDER_ARG}      ❍ An ETH address that may spend tokens on your behalf.
   ${WITH_GSN_ARG}      ❍ Use the version of the pToken with GasStationNetwork logic [default: true].
   ${NETWORK_ARG}             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
@@ -163,6 +165,7 @@ const main = _ => {
       CLI_ARGS[DEPLOYED_ADDRESS_ARG],
       CLI_ARGS[AMOUNT_ARG],
       CLI_ARGS[RECIPIENT_ARG],
+      CLI_ARGS[DESTINATION_CHAIN_ID_ARG],
       CLI_ARGS[USER_DATA_OPTIONAL_ARG],
     )
   } else if (CLI_ARGS[VERIFY_CONTRACT_CMD]) {
@@ -176,5 +179,3 @@ const main = _ => {
 }
 
 main().catch(_err => console.error('✘', _err.message))
-
-// TODO add addSupprted & removeSupported etc (use plural in CLI and check if single passed and abstract that away.
