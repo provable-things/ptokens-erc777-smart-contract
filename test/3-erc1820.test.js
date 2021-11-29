@@ -8,7 +8,6 @@ const {
   ZERO_ADDRESS,
   ADDRESS_PROP,
   ORIGIN_CHAIN_ID,
-  DESTINATION_CHAIN_ID,
 } = require('./test-constants')
 const assert = require('assert')
 const { prop } = require('ramda')
@@ -35,7 +34,6 @@ describe('pToken ERC1820 Tests', () => {
       TOKEN_SYMBOL,
       OWNER_ADDRESS,
       ORIGIN_CHAIN_ID,
-      [ DESTINATION_CHAIN_ID ],
     ])
     await PTOKEN_CONTRACT.grantMinterRole(OWNER_ADDRESS)
   })

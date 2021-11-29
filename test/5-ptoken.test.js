@@ -34,7 +34,6 @@ describe('pToken Tests', () => {
       TOKEN_SYMBOL,
       OWNER.address,
       ORIGIN_CHAIN_ID,
-      [ DESTINATION_CHAIN_ID ],
     ])
     await CONTRACT.grantMinterRole(OWNER.address)
   })
@@ -42,10 +41,6 @@ describe('pToken Tests', () => {
   describe('Initialization Tests', () => {
     it('Origin chain id should be set correctly on deployment', async () => {
       assert.strictEqual(await CONTRACT.ORIGIN_CHAIN_ID(), ORIGIN_CHAIN_ID)
-    })
-
-    it('Should have destination chain ID set in mapping', async () => {
-      assert(await CONTRACT.SUPPORTED_DESTINATION_CHAIN_IDS(DESTINATION_CHAIN_ID))
     })
   })
 

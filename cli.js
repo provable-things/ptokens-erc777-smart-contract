@@ -49,7 +49,6 @@ const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
 const WITH_GSN_ARG = `${WITH_GSN_OPTIONAL_ARG}=<bool>`
-const DESTINATION_CHAIN_ID_ARG = '<destinationChainId>'
 const USER_DATA_ARG = `${USER_DATA_OPTIONAL_ARG}=<hex>`
 const SHOW_EXISTING_CONTRACTS_CMD = 'showExistingContracts'
 
@@ -88,7 +87,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${DEPLOYED_ADDRESS_ARG} ${NETWORK_ARG} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} [${USER_DATA_ARG}]
-  ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG} ${ORIGIN_CHAIN_ID_ARG} ${DESTINATION_CHAIN_ID_ARG}...
+  ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG} ${ORIGIN_CHAIN_ID_ARG}
 
 ❍ Commands:
   ${DEPLOY_PTOKEN_CMD}        ❍ Deploy the logic contract.
@@ -110,7 +109,6 @@ const USAGE_INFO = `
   ${VERSION_ARG}             ❍ Show tool version.
   ${ETH_ADDRESS_ARG}          ❍ A valid ETH address.
   ${TOKEN_NAME_ARG}           ❍ The name of the pToken.
-  ${DESTINATION_CHAIN_ID_ARG}  ❍ A destination chain ID.
   ${TOKEN_SYMBOL_ARG}         ❍ The symbol of the pToken.
   ${DEPLOYED_ADDRESS_ARG}     ❍ The ETH address of the deployed pToken.
   ${RECIPIENT_ARG}           ❍ The recipient of the pegged out pTokens.
@@ -147,7 +145,6 @@ const main = _ => {
       CLI_ARGS[TOKEN_SYMBOL_ARG],
       CLI_ARGS[TOKEN_ADMIN_ADDRESS_ARG],
       CLI_ARGS[ORIGIN_CHAIN_ID_ARG],
-      CLI_ARGS[DESTINATION_CHAIN_ID_ARG],
     )
   } else if (CLI_ARGS[TRANSFER_TOKEN_CMD]) {
     return transferToken(
@@ -173,7 +170,6 @@ const main = _ => {
       CLI_ARGS[DEPLOYED_ADDRESS_ARG],
       CLI_ARGS[NETWORK_ARG],
       CLI_ARGS[ORIGIN_CHAIN_ID_ARG],
-      CLI_ARGS[DESTINATION_CHAIN_ID_ARG],
       convertStringToBool(CLI_ARGS[WITH_GSN_OPTIONAL_ARG]),
     )
   }

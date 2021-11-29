@@ -16,7 +16,7 @@ contract PToken is
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes4 public ORIGIN_CHAIN_ID;
-    mapping(bytes4 => bool) public SUPPORTED_DESTINATION_CHAIN_IDS;
+    mapping(bytes4 => bool) public SUPPORTED_DESTINATION_CHAIN_IDS; // TODO rm!
 
     event Redeem(
         address indexed redeemer,
@@ -31,8 +31,7 @@ contract PToken is
         string memory tokenName,
         string memory tokenSymbol,
         address defaultAdmin,
-        bytes4 originChainId,
-        bytes4[] memory destinationChainIds
+        bytes4 originChainId
     )
         public initializer
     {
@@ -43,9 +42,6 @@ contract PToken is
         __ERC777WithAdminOperatorUpgradeable_init(defaultAdmin);
         _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         ORIGIN_CHAIN_ID = originChainId;
-        for (uint256 i = 0; i < destinationChainIds.length; i++) {
-            SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainIds[i]] = true;
-        }
     }
 
     modifier onlyMinter {
