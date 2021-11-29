@@ -16,7 +16,6 @@ contract PToken is
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes4 public ORIGIN_CHAIN_ID;
-    mapping(bytes4 => bool) public SUPPORTED_DESTINATION_CHAIN_IDS; // TODO rm!
 
     event Redeem(
         address indexed redeemer,
@@ -47,62 +46,6 @@ contract PToken is
     modifier onlyMinter {
         require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
         _;
-    }
-
-    function addSupportedDestinationChainId(
-        bytes4 destinationChainId
-    )
-        public
-        onlyMinter
-        returns (bool)
-    {
-        require(
-            !SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId],
-            "Destination chain ID already supported"
-        );
-        SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId] = true;
-        return true;
-    }
-
-    function addSupportedDestinationChainIds(
-        bytes4[] calldata destinationChainIds
-    )
-        external
-        onlyMinter
-        returns (bool)
-    {
-        for (uint256 i = 0; i < destinationChainIds.length; i++) {
-            addSupportedDestinationChainId(destinationChainIds[i]);
-        }
-        return true;
-    }
-
-    function removeSupportedDestinationChainId(
-        bytes4 destinationChainId
-    )
-        public
-        onlyMinter
-        returns (bool)
-    {
-        require(
-            SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId],
-            "Destination chain ID already not supported"
-        );
-        SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId] = false;
-        return true;
-    }
-
-    function removeSupportedDestinationChainIds(
-        bytes4[] calldata destinationChainIds
-    )
-        external
-        onlyMinter
-        returns (bool)
-    {
-        for (uint256 i = 0; i < destinationChainIds.length; i++) {
-            removeSupportedDestinationChainId(destinationChainIds[i]);
-        }
-        return true;
     }
 
     function mint(
@@ -154,10 +97,6 @@ contract PToken is
     )
         public
     {
-        require(
-            SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId],
-            "Destination chain ID not supported!"
-        );
         _burn(_msgSender(), amount, userData, "");
         emit Redeem(
             _msgSender(),
