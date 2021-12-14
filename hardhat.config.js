@@ -14,6 +14,7 @@ require('@openzeppelin/hardhat-upgrades')
 const SUPPORTED_NETWORKS = [
   'rinkeby',
   'ropsten',
+  'bscMainnet',
   'ambrosTestnet',
 ]
 
