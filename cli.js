@@ -19,6 +19,7 @@ const { flattenContract } = require('./lib/flatten-contract')
 const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
 const { showEncodedInitArgs } = require('./lib/get-encoded-init-args')
+const { getTransactionCount } = require('./lib/get-transaction-count')
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
 
 const HELP_ARG = '--help'
@@ -41,14 +42,15 @@ const DEPLOY_PTOKEN_CMD = 'deployContract'
 const TRANSFER_TOKEN_CMD = 'transferToken'
 const USER_DATA_OPTIONAL_ARG = '--userData'
 const VERIFY_CONTRACT_CMD = 'verifyContract'
+const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const ORIGIN_CHAIN_ID_ARG = '<originChainId>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
-const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
 const WITH_GSN_ARG = `${WITH_GSN_OPTIONAL_ARG}=<bool>`
+const GET_TRANSACTION_COUNT_CMD = 'getTransactionCount'
 const DESTINATION_CHAIN_ID_ARG = '<destinationChainId>'
 const USER_DATA_ARG = `${USER_DATA_OPTIONAL_ARG}=<hex>`
 const SHOW_EXISTING_CONTRACTS_CMD = 'showExistingContracts'
@@ -79,6 +81,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
   ${TOOL_NAME} ${SHOW_WALLET_DETAILS_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
+  ${TOOL_NAME} ${GET_TRANSACTION_COUNT_CMD} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
@@ -94,6 +97,7 @@ const USAGE_INFO = `
   ${DEPLOY_PTOKEN_CMD}        ❍ Deploy the logic contract.
   ${SHOW_SUGGESTED_FEES_CMD}     ❍ Show 'ethers.js' suggested fees.
   ${VERIFY_CONTRACT_CMD}        ❍ Verify the deployed logic contract.
+  ${GET_TRANSACTION_COUNT_CMD}   ❍ Get the nonce of the passed in ${ETH_ADDRESS_ARG}.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
   ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
@@ -141,6 +145,8 @@ const main = _ => {
     return grantMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[REVOKE_ROLE_CMD]) {
     return revokeMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[GET_TRANSACTION_COUNT_CMD]) {
+    return getTransactionCount(CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
