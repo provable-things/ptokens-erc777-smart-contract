@@ -48,6 +48,11 @@ contract PToken is
         _;
     }
 
+    modifier onlyAdmin {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Caller is not an admin");
+        _;
+    }
+
     function mint(
         address recipient,
         uint256 value
@@ -154,5 +159,16 @@ contract PToken is
         returns (bytes memory)
     {
         return GSNRecipientUpgradeable._msgData();
+    }
+
+    function changeOriginChainId(
+        bytes4 _newOriginChainId
+    )
+        public
+        onlyAdmin
+        returns (bool success)
+    {
+        ORIGIN_CHAIN_ID = _newOriginChainId;
+        return true;
     }
 }

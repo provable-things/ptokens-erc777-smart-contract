@@ -226,4 +226,24 @@ describe('pToken Tests', () => {
       assert(recipientBalanceAfterUpgrade.eq(BigNumber.from(AMOUNT)))
     })
   })
+
+  describe('Change Origin ID Tests', () => {
+    it('Owner can change origin ID', async () => {
+      const newOriginChainId = '0xc0ffee00'
+      assert.strictEqual(await CONTRACT.ORIGIN_CHAIN_ID(), ORIGIN_CHAIN_ID)
+      await CONTRACT.changeOriginChainId(newOriginChainId)
+      assert.strictEqual(await CONTRACT.ORIGIN_CHAIN_ID(), newOriginChainId)
+    })
+
+    it('Non owner cannot change origin ID', async () => {
+      const newOriginChainId = '0xc0ffee00'
+      assert.strictEqual(await CONTRACT.ORIGIN_CHAIN_ID(), ORIGIN_CHAIN_ID)
+      try {
+        await CONTRACT.connect(NON_OWNER).changeOriginChainId(newOriginChainId)
+      } catch (_err) {
+        const expectedErr = 'Caller is not an admin'
+        assert(_err.message.includes(expectedErr))
+      }
+    })
+  })
 })
