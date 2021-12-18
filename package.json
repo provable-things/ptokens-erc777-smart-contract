@@ -5,7 +5,8 @@
   "main": "cli.js",
   "scripts": {
     "compile": "npx hardhat compile",
-    "tests": "npx hardhat test"
+    "tests": "npx hardhat test",
+    "test": "npm run tests"
   },
   "repository": {
     "type": "git",
