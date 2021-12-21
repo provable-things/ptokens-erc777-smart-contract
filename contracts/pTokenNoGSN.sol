@@ -4,14 +4,13 @@ import "./ERC777WithAdminOperatorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-contract PTokenNoGSN is
+contract PToken is
     Initializable,
     AccessControlUpgradeable,
     ERC777WithAdminOperatorUpgradeable
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes4 public ORIGIN_CHAIN_ID;
-    mapping(bytes4 => bool) public SUPPORTED_DESTINATION_CHAIN_IDS;
 
     event Redeem(
         address indexed redeemer,
@@ -26,8 +25,7 @@ contract PTokenNoGSN is
         string memory tokenName,
         string memory tokenSymbol,
         address defaultAdmin,
-        bytes4 originChainId,
-        bytes4[] memory destinationChainIds
+        bytes4 originChainId
     )
         public initializer
     {
@@ -37,9 +35,6 @@ contract PTokenNoGSN is
         __ERC777WithAdminOperatorUpgradeable_init(defaultAdmin);
         _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         ORIGIN_CHAIN_ID = originChainId;
-        for (uint256 i = 0; i < destinationChainIds.length; i++) {
-            SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainIds[i]] = true;
-        }
     }
 
     modifier onlyMinter {
@@ -47,58 +42,9 @@ contract PTokenNoGSN is
         _;
     }
 
-    function addSupportedDestinationChainId(
-        bytes4 destinationChainId
-    )
-        public
-        onlyMinter
-        returns (bool)
-    {
-        require(
-            !SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId],
-            "Destination chain ID already supported"
-        );
-        SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId] = true;
-        return true;
-    }
-
-    function addSupportedDestinationChainIds(
-        bytes4[] calldata destinationChainIds
-    )
-        external
-        onlyMinter
-        returns (bool)
-    {
-        for (uint256 i = 0; i < destinationChainIds.length; i++) {
-            addSupportedDestinationChainId(destinationChainIds[i]);
-        }
-    }
-
-    function removeSupportedDestinationChainId(
-        bytes4 destinationChainId
-    )
-        public
-        onlyMinter
-        returns (bool)
-    {
-        require(
-            SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId],
-            "Destination chain ID already not supported"
-        );
-        SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId] = false;
-        return true;
-    }
-
-    function removeSupportedDestinationChainIds(
-        bytes4[] calldata destinationChainIds
-    )
-        external
-        onlyMinter
-        returns (bool)
-    {
-        for (uint256 i = 0; i < destinationChainIds.length; i++) {
-            removeSupportedDestinationChainId(destinationChainIds[i]);
-        }
+    modifier onlyAdmin {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Caller is not an admin");
+        _;
     }
 
     function mint(
@@ -150,10 +96,6 @@ contract PTokenNoGSN is
     )
         public
     {
-        require(
-            SUPPORTED_DESTINATION_CHAIN_IDS[destinationChainId],
-            "Destination chain ID not supported!"
-        );
         _burn(_msgSender(), amount, userData, "");
         emit Redeem(
             _msgSender(),
@@ -193,5 +135,16 @@ contract PTokenNoGSN is
 
     function hasMinterRole(address _account) external view returns (bool) {
         return hasRole(MINTER_ROLE, _account);
+    }
+
+    function changeOriginChainId(
+        bytes4 _newOriginChainId
+    )
+        public
+        onlyAdmin
+        returns (bool success)
+    {
+        ORIGIN_CHAIN_ID = _newOriginChainId;
+        return true;
     }
 }
