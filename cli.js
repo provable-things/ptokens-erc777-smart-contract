@@ -10,6 +10,7 @@ const { docopt } = require('docopt')
 const { pegOut } = require('./lib/peg-out')
 const { approve } = require('./lib/approve')
 const { version } = require('./package.json')
+const { sendEth } = require('./lib/send-eth')
 const { deployWeth } = require('./lib/deploy-weth')
 const { convertStringToBool } = require('./lib/utils')
 const { transferToken } = require('./lib/transfer-token')
@@ -28,6 +29,7 @@ const TOOL_NAME = 'cli.js'
 const PEG_OUT_CMD = 'pegOut'
 const AMOUNT_ARG = '<amount>'
 const APPROVE_CMD = 'approve'
+const SEND_ETH_CMD = 'sendEth'
 const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
 const RECIPIENT_ARG = '<recipient>'
@@ -84,6 +86,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SHOW_WALLET_DETAILS_CMD}
   ${TOOL_NAME} ${DEPLOY_WETH_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
+  ${TOOL_NAME} ${SEND_ETH_CMD} ${ETH_ADDRESS_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${GET_TRANSACTION_COUNT_CMD} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD} [${WITH_GSN_ARG}]
@@ -101,6 +104,7 @@ const USAGE_INFO = `
   ${DEPLOY_WETH_CMD}    ❍ Deploy the wrapped ETH contract.
   ${SHOW_SUGGESTED_FEES_CMD}     ❍ Show 'ethers.js' suggested fees.
   ${VERIFY_CONTRACT_CMD}        ❍ Verify the deployed logic contract.
+  ${SEND_ETH_CMD}               ❍ Send ${AMOUNT_ARG} of ETH to ${ETH_ADDRESS_ARG}.
   ${GET_TRANSACTION_COUNT_CMD}   ❍ Get the nonce of the passed in ${ETH_ADDRESS_ARG}.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
@@ -151,6 +155,8 @@ const main = _ => {
     return revokeMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[GET_TRANSACTION_COUNT_CMD]) {
     return getTransactionCount(CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[SEND_ETH_CMD]) {
+    return sendEth(CLI_ARGS[ETH_ADDRESS_ARG], CLI_ARGS[AMOUNT_ARG])
   } else if (CLI_ARGS[DEPLOY_WETH_CMD]) {
     return deployWeth()
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
