@@ -8,8 +8,9 @@ const {
 } = require('./lib/change-minter-role')
 const { docopt } = require('docopt')
 const { pegOut } = require('./lib/peg-out')
+const { approve } = require('./lib/approve')
 const { version } = require('./package.json')
-const { approve } = require('./lib/approve.js')
+const { deployWeth } = require('./lib/deploy-weth')
 const { convertStringToBool } = require('./lib/utils')
 const { transferToken } = require('./lib/transfer-token')
 const { showBalanceOf } = require('./lib/get-balance-of')
@@ -41,6 +42,7 @@ const REVOKE_ROLE_CMD = 'revokeMinterRole'
 const DEPLOY_PTOKEN_CMD = 'deployContract'
 const TRANSFER_TOKEN_CMD = 'transferToken'
 const USER_DATA_OPTIONAL_ARG = '--userData'
+const DEPLOY_WETH_CMD = 'deployWethContract'
 const VERIFY_CONTRACT_CMD = 'verifyContract'
 const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const ORIGIN_CHAIN_ID_ARG = '<originChainId>'
@@ -80,6 +82,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${VERSION_ARG}
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
   ${TOOL_NAME} ${SHOW_WALLET_DETAILS_CMD}
+  ${TOOL_NAME} ${DEPLOY_WETH_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
   ${TOOL_NAME} ${GET_TRANSACTION_COUNT_CMD} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD} [${WITH_GSN_ARG}]
@@ -95,6 +98,7 @@ const USAGE_INFO = `
 
 ❍ Commands:
   ${DEPLOY_PTOKEN_CMD}        ❍ Deploy the logic contract.
+  ${DEPLOY_WETH_CMD}    ❍ Deploy the wrapped ETH contract.
   ${SHOW_SUGGESTED_FEES_CMD}     ❍ Show 'ethers.js' suggested fees.
   ${VERIFY_CONTRACT_CMD}        ❍ Verify the deployed logic contract.
   ${GET_TRANSACTION_COUNT_CMD}   ❍ Get the nonce of the passed in ${ETH_ADDRESS_ARG}.
@@ -147,6 +151,8 @@ const main = _ => {
     return revokeMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[GET_TRANSACTION_COUNT_CMD]) {
     return getTransactionCount(CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[DEPLOY_WETH_CMD]) {
+    return deployWeth()
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],

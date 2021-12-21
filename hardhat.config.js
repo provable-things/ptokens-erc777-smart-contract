@@ -32,11 +32,29 @@ const getAllNetworks = _ =>
 module.exports = {
   networks: getAllNetworks(),
   solidity: {
-    version: '0.6.2',
-    settings: {
-      optimizer: {
-        runs: 200,
-        enabled: true,
+    compilers: [
+      {
+        version: '0.6.2',
+        settings: {
+          optimizer: {
+            runs: 200,
+            enabled: true,
+          }
+        }
+      },
+      {
+        version: '0.4.18',
+        settings: {
+          optimizer: {
+            runs: 200,
+            enabled: true,
+          }
+        }
+      },
+    ],
+    overrides: {
+      'contracts/wEth.sol': {
+        version: '0.4.18',
       }
     }
   },
