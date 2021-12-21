@@ -1,5 +1,5 @@
 const {
-  getPTokenContract,
+  getPtokenContractWithGSN,
   assertTransferEvent
 } = require('./test-utils')
 const {
@@ -16,7 +16,7 @@ describe('Admin Operator Tests', () => {
 
   beforeEach(async () => {
     [ owner, nonOwner, adminOperator ] = await ethers.getSigners()
-    pTokenContract = await getPTokenContract([
+    pTokenContract = await getPtokenContractWithGSN([
       TOKEN_NAME,
       TOKEN_SYMBOL,
       owner.address,

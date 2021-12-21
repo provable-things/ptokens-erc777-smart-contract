@@ -20,7 +20,7 @@ const {
 } = require('./test-utils')
 const assert = require('assert')
 const { BigNumber } = require('ethers')
-const { getPTokenContract } = require('./test-utils')
+const { getPtokenContractWithGSN } = require('./test-utils')
 
 describe('pToken Tests', () => {
   const AMOUNT = 1337
@@ -29,7 +29,7 @@ describe('pToken Tests', () => {
 
   beforeEach(async () => {
     [ OWNER, NON_OWNER, MINTER, ...OTHERS ] = await ethers.getSigners()
-    CONTRACT = await getPTokenContract([
+    CONTRACT = await getPtokenContractWithGSN([
       TOKEN_NAME,
       TOKEN_SYMBOL,
       OWNER.address,

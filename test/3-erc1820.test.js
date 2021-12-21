@@ -1,5 +1,5 @@
 const {
-  getPTokenContract,
+  getPtokenContractWithGSN,
   assertTransferEvent,
 } = require('./test-utils')
 const {
@@ -29,7 +29,7 @@ describe('pToken ERC1820 Tests', () => {
     const [ OWNER, NON_OWNER ] = await ethers.getSigners()
     OWNER_ADDRESS = prop(ADDRESS_PROP, OWNER)
     NON_OWNER_ADDRESS = prop(ADDRESS_PROP, NON_OWNER)
-    PTOKEN_CONTRACT = await getPTokenContract([
+    PTOKEN_CONTRACT = await getPtokenContractWithGSN([
       TOKEN_NAME,
       TOKEN_SYMBOL,
       OWNER_ADDRESS,
