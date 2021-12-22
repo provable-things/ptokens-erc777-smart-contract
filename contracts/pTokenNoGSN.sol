@@ -4,7 +4,13 @@ import "./ERC777WithAdminOperatorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-contract PToken is
+/**
+ * @dev Note: Unfortunately we can't just refactor the original pToken to inherit most of this
+ * logic, then have just the GSN version add the GSN specific logic because of the breaking
+ * changes it would make to the storage layout, breaking the upgradeability. So alas, we have
+ * this near clone to maintain instead.
+ */
+contract PTokenNoGSN is
     Initializable,
     AccessControlUpgradeable,
     ERC777WithAdminOperatorUpgradeable
