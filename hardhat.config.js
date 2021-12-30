@@ -16,6 +16,7 @@ const SUPPORTED_NETWORKS = [
   'ropsten',
   'bscMainnet',
   'ambrosTestnet',
+  'arbitrum',
 ]
 
 const getAllSupportedNetworks = _ =>
