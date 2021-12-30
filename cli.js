@@ -18,6 +18,7 @@ const { showBalanceOf } = require('./lib/get-balance-of')
 const { deployContract } = require('./lib/deploy-contract')
 const { verifyContract } = require('./lib/verify-contract')
 const { flattenContract } = require('./lib/flatten-contract')
+const { getOriginChainId } = require('./lib/get-origin-chain-id')
 const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
 const { showEncodedInitArgs } = require('./lib/get-encoded-init-args')
@@ -52,6 +53,7 @@ const ORIGIN_CHAIN_ID_ARG = '<originChainId>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
+const GET_ORIGIN_CHAIN_ID_CMD = 'getOriginChainId'
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
 const WITH_GSN_ARG = `${WITH_GSN_OPTIONAL_ARG}=<bool>`
@@ -92,6 +94,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${GET_TRANSACTION_COUNT_CMD} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD} [${WITH_GSN_ARG}]
+  ${TOOL_NAME} ${GET_ORIGIN_CHAIN_ID_CMD} ${DEPLOYED_ADDRESS_ARG}
   ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
@@ -109,6 +112,7 @@ const USAGE_INFO = `
   ${VERIFY_CONTRACT_CMD}        ❍ Verify the deployed logic contract.
   ${SEND_ETH_CMD}               ❍ Send ${AMOUNT_ARG} of ETH to ${ETH_ADDRESS_ARG}.
   ${GET_TRANSACTION_COUNT_CMD}   ❍ Get the nonce of the passed in ${ETH_ADDRESS_ARG}.
+  ${GET_ORIGIN_CHAIN_ID_CMD}      ❍ Get origin chain ID of contract at ${DEPLOYED_ADDRESS_ARG}.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
   ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
@@ -163,6 +167,8 @@ const main = _ => {
     return sendEth(CLI_ARGS[ETH_ADDRESS_ARG], CLI_ARGS[AMOUNT_ARG])
   } else if (CLI_ARGS[DEPLOY_WETH_CMD]) {
     return deployWeth()
+  } else if (CLI_ARGS[GET_ORIGIN_CHAIN_ID_CMD]) {
+    return getOriginChainId(CLI_ARGS[DEPLOYED_ADDRESS_ARG])
   } else if (CLI_ARGS[CHANGE_ORIGIN_CHAIN_ID_CMD]) {
     return changeOriginChainId(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ORIGIN_CHAIN_ID_ARG])
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
