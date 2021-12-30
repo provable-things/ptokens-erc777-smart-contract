@@ -22,6 +22,7 @@ const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
 const { showEncodedInitArgs } = require('./lib/get-encoded-init-args')
 const { getTransactionCount } = require('./lib/get-transaction-count')
+const { changeOriginChainId } = require('./lib/change-origin-chain-id')
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
 
 const HELP_ARG = '--help'
@@ -57,6 +58,7 @@ const WITH_GSN_ARG = `${WITH_GSN_OPTIONAL_ARG}=<bool>`
 const GET_TRANSACTION_COUNT_CMD = 'getTransactionCount'
 const DESTINATION_CHAIN_ID_ARG = '<destinationChainId>'
 const USER_DATA_ARG = `${USER_DATA_OPTIONAL_ARG}=<hex>`
+const CHANGE_ORIGIN_CHAIN_ID_CMD = 'changeOriginChainId'
 const SHOW_EXISTING_CONTRACTS_CMD = 'showExistingContracts'
 
 const USAGE_INFO = `
@@ -94,6 +96,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG}
+  ${TOOL_NAME} ${CHANGE_ORIGIN_CHAIN_ID_CMD} ${DEPLOYED_ADDRESS_ARG} ${ORIGIN_CHAIN_ID_ARG}
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${NETWORK_ARG} ${DEPLOYED_ADDRESS_ARG} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG} ${ORIGIN_CHAIN_ID_ARG}
@@ -115,6 +118,7 @@ const USAGE_INFO = `
   ${REVOKE_ROLE_CMD}      ❍ Revoke a minter role from ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${APPROVE_CMD}               ❍ Approve a ${SPENDER_ARG} to spend ${AMOUNT_ARG} tokens at ${DEPLOYED_ADDRESS_ARG}.
   ${SHOW_EXISTING_CONTRACTS_CMD} ❍ Show list of existing pToken logic contract addresses on various blockchains.
+  ${CHANGE_ORIGIN_CHAIN_ID_CMD}   ❍ Change the origin chain ID to ${ORIGIN_CHAIN_ID_ARG} of the contract at ${DEPLOYED_ADDRESS_ARG}.
   ${PEG_OUT_CMD}                ❍ Redeem ${AMOUNT_ARG} at ${DEPLOYED_ADDRESS_ARG} to ${DESTINATION_CHAIN_ID_ARG} with optional ${USER_DATA_ARG}.
 
 ❍ Options:
@@ -159,6 +163,8 @@ const main = _ => {
     return sendEth(CLI_ARGS[ETH_ADDRESS_ARG], CLI_ARGS[AMOUNT_ARG])
   } else if (CLI_ARGS[DEPLOY_WETH_CMD]) {
     return deployWeth()
+  } else if (CLI_ARGS[CHANGE_ORIGIN_CHAIN_ID_CMD]) {
+    return changeOriginChainId(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ORIGIN_CHAIN_ID_ARG])
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
