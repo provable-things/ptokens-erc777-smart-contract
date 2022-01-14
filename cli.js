@@ -15,6 +15,7 @@ const { deployWeth } = require('./lib/deploy-weth')
 const { convertStringToBool } = require('./lib/utils')
 const { transferToken } = require('./lib/transfer-token')
 const { showBalanceOf } = require('./lib/get-balance-of')
+const { hasMinterRole } = require('./lib/has-minter-role')
 const { deployContract } = require('./lib/deploy-contract')
 const { verifyContract } = require('./lib/verify-contract')
 const { flattenContract } = require('./lib/flatten-contract')
@@ -46,6 +47,7 @@ const REVOKE_ROLE_CMD = 'revokeMinterRole'
 const DEPLOY_PTOKEN_CMD = 'deployContract'
 const TRANSFER_TOKEN_CMD = 'transferToken'
 const USER_DATA_OPTIONAL_ARG = '--userData'
+const HAS_MINTER_ROLE_CMD = 'hasMinterRole'
 const DEPLOY_WETH_CMD = 'deployWethContract'
 const VERIFY_CONTRACT_CMD = 'verifyContract'
 const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
@@ -96,6 +98,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${GET_ORIGIN_CHAIN_ID_CMD} ${DEPLOYED_ADDRESS_ARG}
   ${TOOL_NAME} ${GET_BALANCE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
+  ${TOOL_NAME} ${HAS_MINTER_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG}
@@ -117,6 +120,7 @@ const USAGE_INFO = `
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
   ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
   ${ENCODE_INIT_ARGS_CMD}        ❍ Calculate the initializer function arguments in ABI encoded format.
+  ${HAS_MINTER_ROLE_CMD}         ❍ See if ${ETH_ADDRESS_ARG} has minter role on contract @ ${DEPLOYED_ADDRESS_ARG}.
   ${FLATTEN_CONTRACT_CMD}       ❍ Flatten the pToken contract in case manual verification is required.
   ${GRANT_ROLE_CMD}       ❍ Grant a minter role to ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${REVOKE_ROLE_CMD}      ❍ Revoke a minter role from ${ETH_ADDRESS_ARG} for pToken at ${DEPLOYED_ADDRESS_ARG}.
@@ -171,6 +175,8 @@ const main = _ => {
     return getOriginChainId(CLI_ARGS[DEPLOYED_ADDRESS_ARG])
   } else if (CLI_ARGS[CHANGE_ORIGIN_CHAIN_ID_CMD]) {
     return changeOriginChainId(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ORIGIN_CHAIN_ID_ARG])
+  } else if (CLI_ARGS[HAS_MINTER_ROLE_CMD]) {
+    return hasMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
