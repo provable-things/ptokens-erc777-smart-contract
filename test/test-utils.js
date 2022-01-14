@@ -1,73 +1,33 @@
-/* eslint-disable no-undef */
-module.exports.shortenEthAddress = _ethAddress =>
-  `${_ethAddress.slice(0, 6)}...${_ethAddress.slice(-4)}`
+const {
+  prop,
+  curry,
+} = require('ramda')
+const {
+  ORIGIN_CHAIN_ID,
+  DESTINATION_CHAIN_ID,
+  PTOKEN_WITH_GSN_CONTRACT_PATH,
+  PTOKEN_WITHOUT_GSN_CONTRACT_PATH,
+} = require('./test-constants')
+const assert = require('assert')
+const { BigNumber } = require('ethers')
 
-module.exports.getTokenBalance = (_address, _contractMethods) =>
-  _contractMethods
-    .balanceOf(_address)
-    .then(parseInt)
+const getTokenBalance = (_address, _contract) =>
+  _contract.balanceOf(_address)
 
-module.exports.getContract = (_web3, _artifact, _constructorParams) =>
-  new Promise((resolve, reject) =>
-    _artifact
-      .new(..._constructorParams)
-      .then(({ contract: { _jsonInterface, _address } }) =>
-        resolve(new _web3.eth.Contract(_jsonInterface, _address))
-      )
-      .catch(reject)
-  )
+const mintTokensToAccounts = (_contract, _accounts, _amount) =>
+  Promise.all(_accounts.map(prop('address')).map(_address => _contract['mint(address,uint256)'](_address, _amount)))
 
-module.exports.mintTokensToAccounts = (
-  _methods,
-  _accounts,
-  _amount,
-  _from,
-  _gas
-) =>
-  Promise.all(
-    _accounts
-      .map(_account =>
-        _methods
-          .mint(_account, _amount, { from: _from, gas: _gas })
-      )
-  )
-
-module.exports.assertTransferEvent = (
-  logs,
-  _from,
-  _to,
-  _value
-) => {
-  const _event = logs.find(log => log.event === 'Transfer')
-  assert.strictEqual(_event.args.from, _from)
-  assert.strictEqual(_event.args.to, _to)
-  assert.strictEqual(parseInt(_event.args.value), _value)
+const assertRedeemEvent = (_events, _redeemer, _redeemAmount, _assetRecipient) => {
+  const event = _events.find(_event => _event.event === 'Redeem')
+  assert.strictEqual(event.args.redeemer, _redeemer)
+  assert.strictEqual(parseInt(event.args.value), _redeemAmount)
+  assert.strictEqual(event.args.underlyingAssetRecipient, _assetRecipient)
+  assert.strictEqual(event.args.originChainId, ORIGIN_CHAIN_ID)
+  assert.strictEqual(event.args.destinationChainId, DESTINATION_CHAIN_ID)
 }
 
-module.exports.assertRedeemEvent = (
-  logs,
-  _redeemer,
-  _redeemAmount,
-  _assetRecipient,
-) => {
-  const _event = logs.find(log => log.event === 'Redeem')
-  assert.strictEqual(_event.args.redeemer, _redeemer)
-  assert.strictEqual(parseInt(_event.args.value), _redeemAmount)
-  assert.strictEqual(
-    _event.args.underlyingAssetRecipient,
-    _assetRecipient
-  )
-}
-
-module.exports.assertBurnEvent = (
-  logs,
-  _redeemer,
-  _operator,
-  _amount,
-  _data,
-  _operatorData
-) => {
-  const _event = logs.find(log => log.event === 'Burned')
+const assertBurnEvent = (_logs, _redeemer, _operator, _amount, _data, _operatorData) => {
+  const _event = _logs.find(_log => _log.event === 'Burned')
   assert.strictEqual(_event.args.from, _redeemer)
   assert.strictEqual(_event.args.operator, _operator)
   assert.strictEqual(parseInt(_event.args.amount), _amount)
@@ -75,15 +35,8 @@ module.exports.assertBurnEvent = (
   assert.strictEqual(_event.args.operatorData, _operatorData)
 }
 
-module.exports.assertMintEvent = (
-  logs,
-  _recipient,
-  _operator,
-  _amount,
-  _data,
-  _operatorData,
-) => {
-  const _event = logs.find(log => log.event === 'Minted')
+const assertMintEvent = (_logs, _recipient, _operator, _amount, _data, _operatorData) => {
+  const _event = _logs.find(_log => _log.event === 'Minted')
   assert.strictEqual(_event.args.data, _data)
   assert.strictEqual(_event.args.to, _recipient)
   assert.strictEqual(_event.args.operator, _operator)
@@ -91,19 +44,44 @@ module.exports.assertMintEvent = (
   assert.strictEqual(parseInt(_event.args.amount), _amount)
 }
 
-module.exports.fixSignaturePerEIP155 = _signature => {
+const fixSignaturePerEIP155 = _signature => {
   const bitcoinElectrumWalletMagicNumber = 27
   return _signature.substring(130, 132) === '00'
     ? _signature.substring(0, 130) + bitcoinElectrumWalletMagicNumber.toString(16)
     : _signature.substring(0, 130) + (bitcoinElectrumWalletMagicNumber + 1).toString(16)
 }
 
-module.exports.getContractWithAddress = (_web3, _artifact, _constructorParams) =>
-  new Promise((resolve, reject) =>
-    _artifact
-      .new(..._constructorParams)
-      .then(({ contract: { _jsonInterface, _address } }) =>
-        resolve({ contract: new _web3.eth.Contract(_jsonInterface, _address), address: _address })
-      )
-      .catch(reject)
-  )
+/* eslint-disable-next-line no-return-assign */
+const silenceConsoleInfoOutput = _ =>
+  /* eslint-disable-next-line no-empty-function */
+  console.info = __ => {}
+
+const assertTransferEvent = (_events, _from, _to, _amount) => {
+  const event = _events.find(_event => _event.event === 'Transfer')
+  assert.strictEqual(event.args.from, _from)
+  assert.strictEqual(event.args.to, _to)
+  assert(event.args.value.eq(BigNumber.from(_amount)))
+}
+
+const getPTokenContract = curry((_withGSN, _initArgs) =>
+  ethers
+    .getContractFactory(_withGSN ? PTOKEN_WITH_GSN_CONTRACT_PATH : PTOKEN_WITHOUT_GSN_CONTRACT_PATH)
+    .then(_factory => upgrades.deployProxy(_factory, _initArgs))
+)
+
+const getPtokenContractWithGSN = getPTokenContract(true)
+
+const getPtokenContractWithoutGSN = getPTokenContract(false)
+
+module.exports = {
+  getTokenBalance,
+  assertBurnEvent,
+  assertMintEvent,
+  assertRedeemEvent,
+  assertTransferEvent,
+  mintTokensToAccounts,
+  fixSignaturePerEIP155,
+  getPtokenContractWithGSN,
+  silenceConsoleInfoOutput,
+  getPtokenContractWithoutGSN,
+}
