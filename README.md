@@ -38,38 +38,52 @@ Output:
   NOTE: The tool requires a '.env' file to exist in the root of the repository with the following info:
     ENDPOINT=<rpc-endpoint-for-blochain-to-interact-with>
 
-  NOTE: To call the 'verifyPToken' function, the following extra environment variable is required:
+  NOTE: To call the 'verifyContract' function, the following extra environment variable is required:
     ETHERSCAN_API_KEY=<api-key-for-automated-contract-verifications>
 
 ❍ Usage:
   cli.js --help
   cli.js --version
-  cli.js deployPToken
-  cli.js flattenContract
   cli.js showSuggestedFees
   cli.js showWalletDetails
+  cli.js deployWethContract
   cli.js showExistingContracts
-  cli.js verifyPToken <deployedAddress> <network>
+  cli.js sendEth <ethAddress> <amount>
+  cli.js getTransactionCount <ethAddress>
+  cli.js deployContract [--withGSN=<bool>]
+  cli.js flattenContract [--withGSN=<bool>]
+  cli.js getOriginChainId <deployedAddress>
   cli.js getBalanceOf <deployedAddress> <ethAddress>
+  cli.js hasMinterRole <deployedAddress> <ethAddress>
   cli.js grantMinterRole <deployedAddress> <ethAddress>
   cli.js revokeMinterRole <deployedAddress> <ethAddress>
-  cli.js getEncodedInitArgs <tokenName> <tokenSymbol> <adminAddress>
-  cli.js pegOut <deployedAddress> <amount> <recipient> [--userData=<hex>]
+  cli.js approve <deployedAddress> <spenderAddress> <amount>
+  cli.js changeOriginChainId <deployedAddress> <originChainId>
+  cli.js transferToken <deployedAddress> <recipient> <amount>
+  cli.js verifyContract <network> <deployedAddress> [--withGSN=<bool>]
+  cli.js encodeInitArgs <tokenName> <tokenSymbol> <adminAddress> <originChainId>
+  cli.js pegOut <deployedAddress> <amount> <recipient> <destinationChainId> [--userData=<hex>]
 
 ❍ Commands:
-
+  deployContract        ❍ Deploy the logic contract.
+  deployWethContract    ❍ Deploy the wrapped ETH contract.
   showSuggestedFees     ❍ Show 'ethers.js' suggested fees.
-  deployPToken          ❍ Deploy the pToken logic contract.
-  verifyPToken          ❍ Verify a deployed pToken logic contract.
+  verifyContract        ❍ Verify the deployed logic contract.
+  sendEth               ❍ Send <amount> of ETH to <ethAddress>.
+  getTransactionCount   ❍ Get the nonce of the passed in <ethAddress>.
+  getOriginChainId      ❍ Get origin chain ID of contract at <deployedAddress>.
   getBalanceOf          ❍ Get balance of <ethAddress> of pToken at <deployedAddress>.
+  transferToken         ❍ Transfer <amount> of token @ <deployedAddress> to <recipient>.
   showWalletDetails     ❍ Decrypts the private key and shows address & balance information.
-  getEncodedInitArgs    ❍ Calculate the initializer function arguments in ABI encoded format.
-  pegOut                ❍ Redeem <amount> at <deployedAddress> with optional --userData=<hex>.
+  encodeInitArgs        ❍ Calculate the initializer function arguments in ABI encoded format.
+  hasMinterRole         ❍ See if <ethAddress> has minter role on contract @ <deployedAddress>.
   flattenContract       ❍ Flatten the pToken contract in case manual verification is required.
   grantMinterRole       ❍ Grant a minter role to <ethAddress> for pToken at <deployedAddress>.
   revokeMinterRole      ❍ Revoke a minter role from <ethAddress> for pToken at <deployedAddress>.
+  approve               ❍ Approve a <spenderAddress> to spend <amount> tokens at <deployedAddress>.
   showExistingContracts ❍ Show list of existing pToken logic contract addresses on various blockchains.
-
+  changeOriginChainId   ❍ Change the origin chain ID to <originChainId> of the contract at <deployedAddress>.
+  pegOut                ❍ Redeem <amount> at <deployedAddress> to <destinationChainId> with optional --userData=<hex>.
 
 ❍ Options:
   --help                ❍ Show this message.
@@ -79,9 +93,13 @@ Output:
   <tokenSymbol>         ❍ The symbol of the pToken.
   <deployedAddress>     ❍ The ETH address of the deployed pToken.
   <recipient>           ❍ The recipient of the pegged out pTokens.
+  <originChainId>       ❍ The origin chain ID of this pToken contract.
   <adminAddress>        ❍ The ETH address to administrate the pToken.
   --userData=<hex>      ❍ Optional user data in hex format [default: 0x].
   <amount>              ❍ An amount in the most granular form of the token.
+  <destinationChainId>  ❍ A destination chain ID as a 'bytes4' solidity type.
+  <spenderAddress>      ❍ An ETH address that may spend tokens on your behalf.
+  --withGSN=<bool>      ❍ Use the version of the pToken with GasStationNetwork logic [default: true].
   <network>             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
 
 ```
@@ -145,31 +163,45 @@ Test output:
 ```
 
   pToken ERC777GSN Tests
-    ✓ Should transfer via relayer (352ms)
-    ✓ When transferring via relay, it should pay fee in token (183ms)
+    ✓ Should transfer via relayer (396ms)
+    ✓ When transferring via relay, it should pay fee in token (177ms)
 
-  Admin Operator Tests
+  Admin Operator Tests WITH GSN
     ✓ Non-owner cannot change the admin operator address
     ✓ Admin operator CAN change the admin operator address
     ✓ `adminTransfer()` should fail if the caller is not the admin operator
     ✓ `adminTransfer()` should transfer tokens
 
-  pToken ERC1820 Tests
+  Admin Operator Tests WITHOUT GSN
+    ✓ Non-owner cannot change the admin operator address
+    ✓ Admin operator CAN change the admin operator address
+    ✓ `adminTransfer()` should fail if the caller is not the admin operator
+    ✓ `adminTransfer()` should transfer tokens (38ms)
+
+  pToken ERC1820 Tests WITH GSN
     ✓ Should mint to an externally owned account
     ✓ Should not mint to a contract that does not support ERC1820 (46ms)
-    ✓ Should mint to a contract that supports ERC1820, and call `tokensReceivedHook` (69ms)
+    ✓ Should mint to a contract that supports ERC1820, and call `tokensReceivedHook` (95ms)
+
+  pToken ERC1820 Tests WITHOUT GSN
+    ✓ Should mint to an externally owned account
+    ✓ Should not mint to a contract that does not support ERC1820 (71ms)
+    ✓ Should mint to a contract that supports ERC1820, and call `tokensReceivedHook` (81ms)
 
   Testing Constructor Arg Encoder...
     ✓ Should get encoded pToken init fxn call
     ✓ Should get encoded proxy constructor args
     ✓ Should get encoded constructor args
 
-  pToken Tests
+  pToken Tests WITH GSN
+    Initialization Tests
+      ✓ Origin chain id should be set correctly on deployment
     Roles Tests
-      ✓ Owner has 'admin' and 'minter' role
+      ✓ Owner has 'default admin' role
+      ✓ Owner has 'minter' role
       ✓ Owner can grant `minter` role
-      ✓ Owner can revoke `minter` role
-      ✓ Newly added minter should be able to mint tokens & emit correct events (44ms)
+      ✓ Owner can revoke `minter` role (40ms)
+      ✓ Newly added minter should be able to mint tokens & emit correct events (46ms)
       ✓ Should grant minter role to EOA
     Mint Tests
       ✓ `mint()` w/out data should mint tokens & emit correct events
@@ -179,14 +211,44 @@ Test output:
       ✓ `mint()` w/ data should mint tokens & emit correct events
       ✓ Should revert when minting tokens with the contract address as the recipient
     Redeem Tests
-      ✓ `redeem()` function should burn tokens & emit correct events (283ms)
+      ✓ `redeem()` function should burn tokens & emit correct events (288ms)
       ✓ Should get redeem fxn call data correctly
     Contract Upgrades Tests
-      ✓ Should upgrade contract (88ms)
-      ✓ User balance should remain after contract upgrade (69ms)
+      ✓ Should upgrade contract (100ms)
+      ✓ User balance should remain after contract upgrade (96ms)
+    Change Origin ID Tests
+      ✓ Owner can change origin ID
+      ✓ Non owner cannot change origin ID
+
+  pToken Tests WITHOUT GSN
+    Initialization Tests
+      ✓ Origin chain id should be set correctly on deployment
+    Roles Tests
+      ✓ Owner has 'default admin' role
+      ✓ Owner has 'minter' role
+      ✓ Owner can grant `minter` role
+      ✓ Owner can revoke `minter` role (38ms)
+      ✓ Newly added minter should be able to mint tokens & emit correct events (42ms)
+      ✓ Should grant minter role to EOA
+    Mint Tests
+      ✓ `mint()` w/out data should mint tokens & emit correct events
+      ✓ `mint()` w/out data should return true if successful
+      ✓ `mint()` cannot mint to zero address
+      ✓ `mint()` only owner can mint
+      ✓ `mint()` w/ data should mint tokens & emit correct events
+      ✓ Should revert when minting tokens with the contract address as the recipient
+    Redeem Tests
+      ✓ `redeem()` function should burn tokens & emit correct events (251ms)
+      ✓ Should get redeem fxn call data correctly
+    Contract Upgrades Tests
+      ✓ Should upgrade contract (89ms)
+      ✓ User balance should remain after contract upgrade (75ms)
+    Change Origin ID Tests
+      ✓ Owner can change origin ID
+      ✓ Non owner cannot change origin ID
 
 
-  27 passing (5s)
+  57 passing (12s)
 
 ```
 
@@ -194,5 +256,5 @@ Test output:
 
 ## :white_medium_square: To Do:
 
+[x] Add tests for non-gsn version?
 [ ] Allow custom gas prices?
-[ ] Add tests for non-gsn version?
