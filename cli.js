@@ -25,6 +25,7 @@ const { showSuggestedFees } = require('./lib/show-suggested-fees')
 const { showEncodedInitArgs } = require('./lib/get-encoded-init-args')
 const { getTransactionCount } = require('./lib/get-transaction-count')
 const { changeOriginChainId } = require('./lib/change-origin-chain-id')
+const { checkErc1820RegistryExists } = require('./lib/check-erc1820-registry-exists')
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
 
 const HELP_ARG = '--help'
@@ -53,6 +54,7 @@ const VERIFY_CONTRACT_CMD = 'verifyContract'
 const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const ORIGIN_CHAIN_ID_ARG = '<originChainId>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
+const CHECK_ERC1820_EXISTS_CMD = 'checkERC1820Exists'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
 const GET_ORIGIN_CHAIN_ID_CMD = 'getOriginChainId'
@@ -91,6 +93,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
   ${TOOL_NAME} ${SHOW_WALLET_DETAILS_CMD}
   ${TOOL_NAME} ${DEPLOY_WETH_CMD}
+  ${TOOL_NAME} ${CHECK_ERC1820_EXISTS_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
   ${TOOL_NAME} ${SEND_ETH_CMD} ${ETH_ADDRESS_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${GET_TRANSACTION_COUNT_CMD} ${ETH_ADDRESS_ARG}
@@ -114,6 +117,7 @@ const USAGE_INFO = `
   ${SHOW_SUGGESTED_FEES_CMD}     ❍ Show 'ethers.js' suggested fees.
   ${VERIFY_CONTRACT_CMD}        ❍ Verify the deployed logic contract.
   ${SEND_ETH_CMD}               ❍ Send ${AMOUNT_ARG} of ETH to ${ETH_ADDRESS_ARG}.
+  ${CHECK_ERC1820_EXISTS_CMD}    ❍ Check the ERC1820 exists on this chain.
   ${GET_TRANSACTION_COUNT_CMD}   ❍ Get the nonce of the passed in ${ETH_ADDRESS_ARG}.
   ${GET_ORIGIN_CHAIN_ID_CMD}      ❍ Get origin chain ID of contract at ${DEPLOYED_ADDRESS_ARG}.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
@@ -177,6 +181,8 @@ const main = _ => {
     return changeOriginChainId(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ORIGIN_CHAIN_ID_ARG])
   } else if (CLI_ARGS[HAS_MINTER_ROLE_CMD]) {
     return hasMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[CHECK_ERC1820_EXISTS_CMD]) {
+    return checkErc1820RegistryExists()
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
