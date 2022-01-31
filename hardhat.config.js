@@ -1,9 +1,12 @@
 require('dotenv').config()
 const {
+  has,
+  assoc,
+} = require('ramda')
+const {
   ENDPOINT_ENV_VAR_KEY,
   ETHERSCAN_ENV_VAR_KEY
 } = require('./lib/constants')
-const { assoc } = require('ramda')
 
 require('hardhat-erc1820')
 require('@nomiclabs/hardhat-web3')
@@ -19,10 +22,18 @@ const SUPPORTED_NETWORKS = [
   'arbitrum',
 ]
 
-const getAllSupportedNetworks = _ =>
-  SUPPORTED_NETWORKS.reduce((_acc, _network) =>
-    assoc(_network, { url: process.env[ENDPOINT_ENV_VAR_KEY] }, _acc), {}
-  )
+const getAllSupportedNetworks = _ => {
+  if (!has(ENDPOINT_ENV_VAR_KEY, process.env)) {
+    let errorMsg = `✘ No '${
+      ENDPOINT_ENV_VAR_KEY
+    }' environment variable found! Please provide one! (See 'README.md' for more details)`
+    throw new Error(errorMsg)
+  } else {
+    SUPPORTED_NETWORKS.reduce((_acc, _network) =>
+      assoc(_network, { url: process.env[ENDPOINT_ENV_VAR_KEY] }, _acc), {}
+    )
+  }
+}
 
 const addLocalNetwork = _allSupportedNetworks =>
   assoc('localhost', { url: 'http://localhost:8545' }, _allSupportedNetworks)
