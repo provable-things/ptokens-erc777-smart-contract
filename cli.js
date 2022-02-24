@@ -19,6 +19,7 @@ const { hasMinterRole } = require('./lib/has-minter-role')
 const { deployContract } = require('./lib/deploy-contract')
 const { verifyContract } = require('./lib/verify-contract')
 const { flattenContract } = require('./lib/flatten-contract')
+const { getAccountNonce } = require('./lib/get_account_nonce')
 const { pushRawSignedTx } = require('./lib/push-raw-signed-tx')
 const { getOriginChainId } = require('./lib/get-origin-chain-id')
 const { showWalletDetails } = require('./lib/show-wallet-details')
@@ -57,6 +58,7 @@ const VERIFY_CONTRACT_CMD = 'verifyContract'
 const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const ORIGIN_CHAIN_ID_ARG = '<originChainId>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
+const GET_ACCOUNT_NONCE_CMD = 'getAccountNonce'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
 const GET_ORIGIN_CHAIN_ID_CMD = 'getOriginChainId'
@@ -98,6 +100,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${DEPLOY_WETH_CMD}
   ${TOOL_NAME} ${CHECK_ERC1820_EXISTS_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
+  ${TOOL_NAME} ${GET_ACCOUNT_NONCE_CMD} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${SEND_ETH_CMD} ${ETH_ADDRESS_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${PUSH_RAW_TX_CMD} ${RAW_TX_ARG}
   ${TOOL_NAME} ${GET_TRANSACTION_COUNT_CMD} ${ETH_ADDRESS_ARG}
@@ -124,6 +127,7 @@ const USAGE_INFO = `
   ${SEND_ETH_CMD}               ❍ Send ${AMOUNT_ARG} of ETH to ${ETH_ADDRESS_ARG}.
   ${CHECK_ERC1820_EXISTS_CMD}    ❍ Check the ERC1820 exists on this chain.
   ${GET_TRANSACTION_COUNT_CMD}   ❍ Get the nonce of the passed in ${ETH_ADDRESS_ARG}.
+  ${GET_ACCOUNT_NONCE_CMD}       ❍ Get the transaction count of the ${ETH_ADDRESS_ARG}.
   ${GET_ORIGIN_CHAIN_ID_CMD}      ❍ Get origin chain ID of contract at ${DEPLOYED_ADDRESS_ARG}.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
@@ -191,6 +195,8 @@ const main = _ => {
     return checkErc1820RegistryExists()
   } else if (CLI_ARGS[PUSH_RAW_TX_CMD]) {
     return pushRawSignedTx(CLI_ARGS[RAW_TX_ARG])
+  } else if (CLI_ARGS[GET_ACCOUNT_NONCE_CMD]) {
+    return getAccountNonce(CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
