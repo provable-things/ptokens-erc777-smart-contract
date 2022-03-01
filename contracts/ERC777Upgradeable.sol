@@ -420,9 +420,14 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
     )
         private
     {
+        // NOTE: Destination receives 97%...
         uint256 destAmount = amount.mul(9700).div(10000);
-        uint256 fee1Amount = amount.mul(255).div(10000);
-        uint256 fee2Amount = amount.mul(45).div(10000);
+        // NOTE: And so fees are the remaining 3%...
+        uint256 fees = amount.sub(destAmount);
+        // NOTE: Of which, fee 1 is 85% of the total fees...
+        uint256 fee1Amount = fees.mul(8500).div(10000);
+        // NOTE: And fee 2 is the remaning 15%.
+        uint256 fee2Amount = fees.sub(fee1Amount);
 
         address fee1Addr = 0x0000000000000000000000000000000000000001;
         address fee2Addr = 0x0000000000000000000000000000000000000002;
