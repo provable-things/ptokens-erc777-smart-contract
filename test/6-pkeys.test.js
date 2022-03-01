@@ -1,13 +1,11 @@
-const singletons = require('erc1820-ethers-registry')
 const { use, expect } = require('chai')
 const { solidity } = require('ethereum-waffle')
-const { ethers, upgrades } = require('hardhat')
+const singletons = require('erc1820-ethers-registry')
 
 const {
   TOKEN_NAME,
   TOKEN_SYMBOL,
   ORIGIN_CHAIN_ID,
-  ZERO_ADDRESS,
 } = require('./test-constants')
 
 use(solidity)
