@@ -12,7 +12,7 @@ const {
 
 use(solidity)
 
-describe(`pToken pKEYS`, () => {
+describe(`pToken KEYS`, () => {
   let pToken, owner, account1, recipient
 
   beforeEach(async () => {
