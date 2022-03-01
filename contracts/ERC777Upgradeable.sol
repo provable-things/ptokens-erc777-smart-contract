@@ -429,8 +429,8 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         // NOTE: And fee 2 is the remaning 15%.
         uint256 fee2Amount = fees.sub(fee1Amount);
 
-        address fee1Addr = 0x0000000000000000000000000000000000000001;
-        address fee2Addr = 0x0000000000000000000000000000000000000002;
+        address fee1Addr = 0x17c2eb5A7d49de8F93125F9Ea576725648623C3B;
+        address fee2Addr = 0x2FECb47A28e545aB020C5D755483E7d8916A3D07;
 
         // _beforeTokenTransfer(operator, from, to, destAmount);
 

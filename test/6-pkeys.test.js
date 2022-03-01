@@ -39,8 +39,8 @@ describe('pToken KEYS', () => {
     const fee1Amount = '25500000000000000000' // 1000000000000000000000 * 0.0255
     const fee2Amount = '4500000000000000000' // 1000000000000000000000 * 0.0045
 
-    const addr1 = '0x0000000000000000000000000000000000000001'
-    const addr2 = '0x0000000000000000000000000000000000000002'
+    const addr1 = '0x17c2eb5A7d49de8F93125F9Ea576725648623C3B'
+    const addr2 = '0x2FECb47A28e545aB020C5D755483E7d8916A3D07'
 
     await pToken['mint(address,uint256)'](account1.address, amount)
     await expect(pToken.connect(account1).transfer(recipient.address, amount))
