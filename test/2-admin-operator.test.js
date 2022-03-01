@@ -63,12 +63,13 @@ USE_GSN.map(_useGSN =>
 
     it('`adminTransfer()` should transfer tokens', async () => {
       const amount = '12345'
+      const expectedAmountAfterFees = Math.floor(parseInt(amount) * 970 / 1000)
       const contract = pTokenContract.connect(adminOperator)
       const tx = await contract.adminTransfer(owner.address, nonOwner.address, amount, EMPTY_DATA, EMPTY_DATA)
       const { events } = await tx.wait()
       await assertTransferEvent(events, owner.address, nonOwner.address, amount)
       const balance = await pTokenContract.balanceOf(nonOwner.address)
-      assert(balance.eq(BigNumber.from(amount)))
+      assert(balance.eq(BigNumber.from(expectedAmountAfterFees)))
     })
   })
 )
