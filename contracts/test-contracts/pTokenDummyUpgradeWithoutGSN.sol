@@ -2,14 +2,12 @@ pragma solidity ^0.6.2;
 
 import "../ERC777WithAdminOperatorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC777/ERC777Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 
 contract PTokenDummyUpgradeWithoutGSN is
     Initializable,
     AccessControlUpgradeable,
-    ERC777Upgradeable,
     ERC777WithAdminOperatorUpgradeable
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
