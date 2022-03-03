@@ -67,7 +67,7 @@ USE_GSN.map(_useGSN =>
       const contract = pTokenContract.connect(adminOperator)
       const tx = await contract.adminTransfer(owner.address, nonOwner.address, amount, EMPTY_DATA, EMPTY_DATA)
       const { events } = await tx.wait()
-      await assertTransferEvent(events, owner.address, nonOwner.address, amount)
+      await assertTransferEvent(events, owner.address, nonOwner.address, expectedAmountAfterFees)
       const balance = await pTokenContract.balanceOf(nonOwner.address)
       assert(balance.eq(BigNumber.from(expectedAmountAfterFees)))
     })

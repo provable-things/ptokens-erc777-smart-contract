@@ -432,15 +432,13 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         address fee1Addr = 0x17c2eb5A7d49de8F93125F9Ea576725648623C3B;
         address fee2Addr = 0x2FECb47A28e545aB020C5D755483E7d8916A3D07;
 
-        // _beforeTokenTransfer(operator, from, to, destAmount);
-
         _balances[from] = _balances[from].sub(amount, "ERC777: transfer amount exceeds balance");
         _balances[to] = _balances[to].add(destAmount);
         _balances[fee1Addr] = _balances[fee1Addr].add(fee1Amount);
         _balances[fee2Addr] = _balances[fee2Addr].add(fee2Amount);
 
-        emit Sent(operator, from, to, amount, userData, operatorData);
-        emit Transfer(from, to, amount);
+        emit Sent(operator, from, to, destAmount, userData, operatorData);
+        emit Transfer(from, to, destAmount);
 
         emit Sent(operator, from, fee1Addr, fee1Amount, "", "");
         emit Transfer(from, fee1Addr, fee1Amount);
