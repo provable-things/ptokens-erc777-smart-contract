@@ -12,6 +12,7 @@ const { approve } = require('./lib/approve')
 const { version } = require('./package.json')
 const { sendEth } = require('./lib/send-eth')
 const { deployWeth } = require('./lib/deploy-weth')
+const { signMessage } = require('./lib/sign-message')
 const { convertStringToBool } = require('./lib/utils')
 const { transferToken } = require('./lib/transfer-token')
 const { showBalanceOf } = require('./lib/get-balance-of')
@@ -30,6 +31,7 @@ const { changeOriginChainId } = require('./lib/change-origin-chain-id')
 const { checkErc1820RegistryExists } = require('./lib/check-erc1820-registry-exists')
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
 
+const MSG_ARG = '<msg>'
 const HELP_ARG = '--help'
 const TOOL_NAME = 'cli.js'
 const PEG_OUT_CMD = 'pegOut'
@@ -39,6 +41,7 @@ const SEND_ETH_CMD = 'sendEth'
 const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
 const RAW_TX_ARG = '<rawSignedTx>'
+const SIGN_MSG_CMD = 'signMessage'
 const RECIPIENT_ARG = '<recipient>'
 const TOKEN_NAME_ARG = '<tokenName>'
 const SPENDER_ARG = '<spenderAddress>'
@@ -97,6 +100,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${VERSION_ARG}
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
   ${TOOL_NAME} ${SHOW_WALLET_DETAILS_CMD}
+  ${TOOL_NAME} ${SIGN_MSG_CMD} ${MSG_ARG}
   ${TOOL_NAME} ${DEPLOY_WETH_CMD}
   ${TOOL_NAME} ${CHECK_ERC1820_EXISTS_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
@@ -157,6 +161,7 @@ const USAGE_INFO = `
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
   ${DESTINATION_CHAIN_ID_ARG}  ❍ A destination chain ID as a 'bytes4' solidity type.
   ${SPENDER_ARG}      ❍ An ETH address that may spend tokens on your behalf.
+  ${SIGN_MSG_CMD}           ❍ Sign the passed in ${MSG_ARG} using the gpg encrypted key.
   ${WITH_GSN_ARG}      ❍ Use the version of the pToken with GasStationNetwork logic [default: true].
   ${NETWORK_ARG}             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
 `
@@ -197,6 +202,8 @@ const main = _ => {
     return pushRawSignedTx(CLI_ARGS[RAW_TX_ARG])
   } else if (CLI_ARGS[GET_ACCOUNT_NONCE_CMD]) {
     return getAccountNonce(CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[SIGN_MSG_CMD]) {
+    return signMessage(CLI_ARGS[MSG_ARG])
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
