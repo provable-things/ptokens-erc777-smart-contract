@@ -12,6 +12,7 @@ const { approve } = require('./lib/approve')
 const { version } = require('./package.json')
 const { sendEth } = require('./lib/send-eth')
 const { deployWeth } = require('./lib/deploy-weth')
+const { signMessage } = require('./lib/sign-message')
 const { convertStringToBool } = require('./lib/utils')
 const { transferToken } = require('./lib/transfer-token')
 const { showBalanceOf } = require('./lib/get-balance-of')
@@ -19,14 +20,18 @@ const { hasMinterRole } = require('./lib/has-minter-role')
 const { deployContract } = require('./lib/deploy-contract')
 const { verifyContract } = require('./lib/verify-contract')
 const { flattenContract } = require('./lib/flatten-contract')
+const { getAccountNonce } = require('./lib/get_account_nonce')
+const { pushRawSignedTx } = require('./lib/push-raw-signed-tx')
 const { getOriginChainId } = require('./lib/get-origin-chain-id')
 const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
 const { showEncodedInitArgs } = require('./lib/get-encoded-init-args')
 const { getTransactionCount } = require('./lib/get-transaction-count')
 const { changeOriginChainId } = require('./lib/change-origin-chain-id')
+const { checkErc1820RegistryExists } = require('./lib/check-erc1820-registry-exists')
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
 
+const MSG_ARG = '<msg>'
 const HELP_ARG = '--help'
 const TOOL_NAME = 'cli.js'
 const PEG_OUT_CMD = 'pegOut'
@@ -35,6 +40,8 @@ const APPROVE_CMD = 'approve'
 const SEND_ETH_CMD = 'sendEth'
 const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
+const RAW_TX_ARG = '<rawSignedTx>'
+const SIGN_MSG_CMD = 'signMessage'
 const RECIPIENT_ARG = '<recipient>'
 const TOKEN_NAME_ARG = '<tokenName>'
 const SPENDER_ARG = '<spenderAddress>'
@@ -43,6 +50,7 @@ const GET_BALANCE_CMD = 'getBalanceOf'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
 const GRANT_ROLE_CMD = 'grantMinterRole'
 const WITH_GSN_OPTIONAL_ARG = '--withGSN'
+const PUSH_RAW_TX_CMD = 'pushRawSignedTx'
 const REVOKE_ROLE_CMD = 'revokeMinterRole'
 const DEPLOY_PTOKEN_CMD = 'deployContract'
 const TRANSFER_TOKEN_CMD = 'transferToken'
@@ -53,11 +61,13 @@ const VERIFY_CONTRACT_CMD = 'verifyContract'
 const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const ORIGIN_CHAIN_ID_ARG = '<originChainId>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
+const GET_ACCOUNT_NONCE_CMD = 'getAccountNonce'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
 const GET_ORIGIN_CHAIN_ID_CMD = 'getOriginChainId'
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
+const CHECK_ERC1820_EXISTS_CMD = 'checkERC1820Exists'
 const WITH_GSN_ARG = `${WITH_GSN_OPTIONAL_ARG}=<bool>`
 const GET_TRANSACTION_COUNT_CMD = 'getTransactionCount'
 const DESTINATION_CHAIN_ID_ARG = '<destinationChainId>'
@@ -90,9 +100,13 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${VERSION_ARG}
   ${TOOL_NAME} ${SHOW_SUGGESTED_FEES_CMD}
   ${TOOL_NAME} ${SHOW_WALLET_DETAILS_CMD}
+  ${TOOL_NAME} ${SIGN_MSG_CMD} ${MSG_ARG}
   ${TOOL_NAME} ${DEPLOY_WETH_CMD}
+  ${TOOL_NAME} ${CHECK_ERC1820_EXISTS_CMD}
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
+  ${TOOL_NAME} ${GET_ACCOUNT_NONCE_CMD} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${SEND_ETH_CMD} ${ETH_ADDRESS_ARG} ${AMOUNT_ARG}
+  ${TOOL_NAME} ${PUSH_RAW_TX_CMD} ${RAW_TX_ARG}
   ${TOOL_NAME} ${GET_TRANSACTION_COUNT_CMD} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD} [${WITH_GSN_ARG}]
@@ -112,9 +126,12 @@ const USAGE_INFO = `
   ${DEPLOY_PTOKEN_CMD}        ❍ Deploy the logic contract.
   ${DEPLOY_WETH_CMD}    ❍ Deploy the wrapped ETH contract.
   ${SHOW_SUGGESTED_FEES_CMD}     ❍ Show 'ethers.js' suggested fees.
+  ${PUSH_RAW_TX_CMD}       ❍ Push ${RAW_TX_ARG} to the network.
   ${VERIFY_CONTRACT_CMD}        ❍ Verify the deployed logic contract.
   ${SEND_ETH_CMD}               ❍ Send ${AMOUNT_ARG} of ETH to ${ETH_ADDRESS_ARG}.
+  ${CHECK_ERC1820_EXISTS_CMD}    ❍ Check the ERC1820 exists on this chain.
   ${GET_TRANSACTION_COUNT_CMD}   ❍ Get the nonce of the passed in ${ETH_ADDRESS_ARG}.
+  ${GET_ACCOUNT_NONCE_CMD}       ❍ Get the transaction count of the ${ETH_ADDRESS_ARG}.
   ${GET_ORIGIN_CHAIN_ID_CMD}      ❍ Get origin chain ID of contract at ${DEPLOYED_ADDRESS_ARG}.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
@@ -135,6 +152,7 @@ const USAGE_INFO = `
   ${ETH_ADDRESS_ARG}          ❍ A valid ETH address.
   ${TOKEN_NAME_ARG}           ❍ The name of the pToken.
   ${TOKEN_SYMBOL_ARG}         ❍ The symbol of the pToken.
+  ${RAW_TX_ARG}         ❍ A signed tx in hex format.
   ${DEPLOYED_ADDRESS_ARG}     ❍ The ETH address of the deployed pToken.
   ${RECIPIENT_ARG}           ❍ The recipient of the pegged out pTokens.
   ${ORIGIN_CHAIN_ID_ARG}       ❍ The origin chain ID of this pToken contract.
@@ -143,6 +161,7 @@ const USAGE_INFO = `
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
   ${DESTINATION_CHAIN_ID_ARG}  ❍ A destination chain ID as a 'bytes4' solidity type.
   ${SPENDER_ARG}      ❍ An ETH address that may spend tokens on your behalf.
+  ${SIGN_MSG_CMD}           ❍ Sign the passed in ${MSG_ARG} using the gpg encrypted key.
   ${WITH_GSN_ARG}      ❍ Use the version of the pToken with GasStationNetwork logic [default: true].
   ${NETWORK_ARG}             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
 `
@@ -177,6 +196,14 @@ const main = _ => {
     return changeOriginChainId(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ORIGIN_CHAIN_ID_ARG])
   } else if (CLI_ARGS[HAS_MINTER_ROLE_CMD]) {
     return hasMinterRole(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[CHECK_ERC1820_EXISTS_CMD]) {
+    return checkErc1820RegistryExists()
+  } else if (CLI_ARGS[PUSH_RAW_TX_CMD]) {
+    return pushRawSignedTx(CLI_ARGS[RAW_TX_ARG])
+  } else if (CLI_ARGS[GET_ACCOUNT_NONCE_CMD]) {
+    return getAccountNonce(CLI_ARGS[ETH_ADDRESS_ARG])
+  } else if (CLI_ARGS[SIGN_MSG_CMD]) {
+    return signMessage(CLI_ARGS[MSG_ARG])
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],

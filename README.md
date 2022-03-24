@@ -46,9 +46,13 @@ Output:
   cli.js --version
   cli.js showSuggestedFees
   cli.js showWalletDetails
+  cli.js signMessage <msg>
   cli.js deployWethContract
+  cli.js checkERC1820Exists
   cli.js showExistingContracts
+  cli.js getAccountNonce <ethAddress>
   cli.js sendEth <ethAddress> <amount>
+  cli.js pushRawSignedTx <rawSignedTx>
   cli.js getTransactionCount <ethAddress>
   cli.js deployContract [--withGSN=<bool>]
   cli.js flattenContract [--withGSN=<bool>]
@@ -68,9 +72,12 @@ Output:
   deployContract        ❍ Deploy the logic contract.
   deployWethContract    ❍ Deploy the wrapped ETH contract.
   showSuggestedFees     ❍ Show 'ethers.js' suggested fees.
+  pushRawSignedTx       ❍ Push <rawSignedTx> to the network.
   verifyContract        ❍ Verify the deployed logic contract.
   sendEth               ❍ Send <amount> of ETH to <ethAddress>.
+  checkERC1820Exists    ❍ Check the ERC1820 exists on this chain.
   getTransactionCount   ❍ Get the nonce of the passed in <ethAddress>.
+  getAccountNonce       ❍ Get the transaction count of the <ethAddress>.
   getOriginChainId      ❍ Get origin chain ID of contract at <deployedAddress>.
   getBalanceOf          ❍ Get balance of <ethAddress> of pToken at <deployedAddress>.
   transferToken         ❍ Transfer <amount> of token @ <deployedAddress> to <recipient>.
@@ -91,6 +98,7 @@ Output:
   <ethAddress>          ❍ A valid ETH address.
   <tokenName>           ❍ The name of the pToken.
   <tokenSymbol>         ❍ The symbol of the pToken.
+  <rawSignedTx>         ❍ A signed tx in hex format.
   <deployedAddress>     ❍ The ETH address of the deployed pToken.
   <recipient>           ❍ The recipient of the pegged out pTokens.
   <originChainId>       ❍ The origin chain ID of this pToken contract.
@@ -99,6 +107,7 @@ Output:
   <amount>              ❍ An amount in the most granular form of the token.
   <destinationChainId>  ❍ A destination chain ID as a 'bytes4' solidity type.
   <spenderAddress>      ❍ An ETH address that may spend tokens on your behalf.
+  signMessage           ❍ Sign the passed in <msg> using the gpg encrypted key.
   --withGSN=<bool>      ❍ Use the version of the pToken with GasStationNetwork logic [default: true].
   <network>             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
 
