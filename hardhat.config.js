@@ -20,6 +20,7 @@ const SUPPORTED_NETWORKS = [
   'bscMainnet',
   'ambrosTestnet',
   'arbitrum',
+  'ethMainnet',
 ]
 
 const getAllSupportedNetworks = _ => {
