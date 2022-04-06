@@ -15,6 +15,7 @@ require('@nomiclabs/hardhat-etherscan')
 require('@openzeppelin/hardhat-upgrades')
 
 const SUPPORTED_NETWORKS = [
+  'fantom',
   'rinkeby',
   'ropsten',
   'bscMainnet',
