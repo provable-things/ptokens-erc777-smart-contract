@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 /* eslint-disable max-len */
-
-require('dotenv').config()
 const {
   grantMinterRole,
   revokeMinterRole,
@@ -25,6 +23,7 @@ const { pushRawSignedTx } = require('./lib/push-raw-signed-tx')
 const { getOriginChainId } = require('./lib/get-origin-chain-id')
 const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
+const { getEnvConfiguration } = require('./lib/get-env-configuration')
 const { showEncodedInitArgs } = require('./lib/get-encoded-init-args')
 const { getTransactionCount } = require('./lib/get-transaction-count')
 const { changeOriginChainId } = require('./lib/change-origin-chain-id')
@@ -241,4 +240,6 @@ const main = _ => {
   }
 }
 
-main().catch(_err => console.error('✘', _err.message))
+getEnvConfiguration()
+  .then(main)
+  .catch(_err => console.error('✘', _err.message))
