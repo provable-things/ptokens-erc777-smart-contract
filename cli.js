@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 /* eslint-disable max-len */
-
-require('dotenv').config()
 const {
   grantMinterRole,
   revokeMinterRole,
