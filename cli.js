@@ -20,6 +20,7 @@ const { verifyContract } = require('./lib/verify-contract')
 const { flattenContract } = require('./lib/flatten-contract')
 const { getAccountNonce } = require('./lib/get_account_nonce')
 const { pushRawSignedTx } = require('./lib/push-raw-signed-tx')
+const { setAdminOperator } = require('./lib/set-admin-operator')
 const { getOriginChainId } = require('./lib/get-origin-chain-id')
 const { showWalletDetails } = require('./lib/show-wallet-details')
 const { showSuggestedFees } = require('./lib/show-suggested-fees')
@@ -63,6 +64,7 @@ const GET_ACCOUNT_NONCE_CMD = 'getAccountNonce'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
 const GET_ORIGIN_CHAIN_ID_CMD = 'getOriginChainId'
+const SET_ADMIN_OPERATOR_CMD = 'setAdminOperator'
 const SHOW_WALLET_DETAILS_CMD = 'showWalletDetails'
 const SHOW_SUGGESTED_FEES_CMD = 'showSuggestedFees'
 const CHECK_ERC1820_EXISTS_CMD = 'checkERC1820Exists'
@@ -117,6 +119,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${CHANGE_ORIGIN_CHAIN_ID_CMD} ${DEPLOYED_ADDRESS_ARG} ${ORIGIN_CHAIN_ID_ARG}
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG}
   ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${NETWORK_ARG} ${DEPLOYED_ADDRESS_ARG} [${WITH_GSN_ARG}]
+  ${TOOL_NAME} ${SET_ADMIN_OPERATOR_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG} ${ORIGIN_CHAIN_ID_ARG}
   ${TOOL_NAME} ${PEG_OUT_CMD} ${DEPLOYED_ADDRESS_ARG} ${AMOUNT_ARG} ${RECIPIENT_ARG} ${DESTINATION_CHAIN_ID_ARG} [${USER_DATA_ARG}]
 
@@ -134,6 +137,7 @@ const USAGE_INFO = `
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
   ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
+  ${SET_ADMIN_OPERATOR_CMD}      ❍ Set admin operator of contract @ ${DEPLOYED_ADDRESS_ARG} to ${ETH_ADDRESS_ARG}.
   ${ENCODE_INIT_ARGS_CMD}        ❍ Calculate the initializer function arguments in ABI encoded format.
   ${HAS_MINTER_ROLE_CMD}         ❍ See if ${ETH_ADDRESS_ARG} has minter role on contract @ ${DEPLOYED_ADDRESS_ARG}.
   ${FLATTEN_CONTRACT_CMD}       ❍ Flatten the pToken contract in case manual verification is required.
@@ -202,6 +206,8 @@ const main = _ => {
     return getAccountNonce(CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[SIGN_MSG_CMD]) {
     return signMessage(CLI_ARGS[MSG_ARG])
+  } else if (CLI_ARGS[SET_ADMIN_OPERATOR_CMD]) {
+    return setAdminOperator(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
