@@ -15,6 +15,7 @@ require('@openzeppelin/hardhat-upgrades')
 
 const SUPPORTED_NETWORKS = [
   'fantom',
+  'polygon',
   'rinkeby',
   'ropsten',
   'bscMainnet',
