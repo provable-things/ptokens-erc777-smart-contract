@@ -41,6 +41,7 @@ const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
 const RAW_TX_ARG = '<rawSignedTx>'
 const SIGN_MSG_CMD = 'signMessage'
+const GAS_PRICE_FLAG = '--gasPrice'
 const RECIPIENT_ARG = '<recipient>'
 const TOKEN_NAME_ARG = '<tokenName>'
 const SPENDER_ARG = '<spenderAddress>'
@@ -48,7 +49,6 @@ const ETH_ADDRESS_ARG = '<ethAddress>'
 const GET_BALANCE_CMD = 'getBalanceOf'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
 const GRANT_ROLE_CMD = 'grantMinterRole'
-const GAS_PRICE_FLAG = '--gasPrice'
 const WITH_GSN_OPTIONAL_ARG = '--withGSN'
 const PUSH_RAW_TX_CMD = 'pushRawSignedTx'
 const REVOKE_ROLE_CMD = 'revokeMinterRole'
@@ -158,7 +158,6 @@ const USAGE_INFO = `
   ${RAW_TX_ARG}         ❍ A signed tx in hex format.
   ${DEPLOYED_ADDRESS_ARG}     ❍ The ETH address of the deployed pToken.
   ${RECIPIENT_ARG}           ❍ The recipient of the pegged out pTokens.
-  ${GAS_PRICE_FLAG}=<wei>      ❍ The gas price to use. Uses ethersjs suggested fees if omitted.
   ${ORIGIN_CHAIN_ID_ARG}       ❍ The origin chain ID of this pToken contract.
   ${TOKEN_ADMIN_ADDRESS_ARG}        ❍ The ETH address to administrate the pToken.
   ${USER_DATA_ARG}      ❍ Optional user data in hex format [default: 0x].
@@ -166,6 +165,7 @@ const USAGE_INFO = `
   ${DESTINATION_CHAIN_ID_ARG}  ❍ A destination chain ID as a 'bytes4' solidity type.
   ${SPENDER_ARG}      ❍ An ETH address that may spend tokens on your behalf.
   ${SIGN_MSG_CMD}           ❍ Sign the passed in ${MSG_ARG} using the gpg encrypted key.
+  ${GAS_PRICE_FLAG}=<wei>      ❍ The gas price to use. Uses ethersjs suggested fees if omitted.
   ${WITH_GSN_ARG}      ❍ Use the version of the pToken with GasStationNetwork logic [default: true].
   ${NETWORK_ARG}             ❍ Network the pToken is deployed on. It must exist in the 'hardhat.config.json'.
 `
