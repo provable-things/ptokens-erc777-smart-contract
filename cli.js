@@ -19,6 +19,7 @@ const { deployContract } = require('./lib/deploy-contract')
 const { verifyContract } = require('./lib/verify-contract')
 const { flattenContract } = require('./lib/flatten-contract')
 const { getAccountNonce } = require('./lib/get_account_nonce')
+const { signDebugCommandHash } = require('./lib/eip712-signer')
 const { pushRawSignedTx } = require('./lib/push-raw-signed-tx')
 const { setAdminOperator } = require('./lib/set-admin-operator')
 const { getOriginChainId } = require('./lib/get-origin-chain-id')
@@ -40,17 +41,21 @@ const SEND_ETH_CMD = 'sendEth'
 const VERSION_ARG = '--version'
 const NETWORK_ARG = '<network>'
 const RAW_TX_ARG = '<rawSignedTx>'
+const CORE_TYPE_ARG = '<coreType>'
 const SIGN_MSG_CMD = 'signMessage'
 const GAS_PRICE_FLAG = '--gasPrice'
 const RECIPIENT_ARG = '<recipient>'
 const TOKEN_NAME_ARG = '<tokenName>'
 const SPENDER_ARG = '<spenderAddress>'
 const ETH_ADDRESS_ARG = '<ethAddress>'
+const SIGNER_NAME_ARG = '<signerName>'
 const GET_BALANCE_CMD = 'getBalanceOf'
 const TOKEN_SYMBOL_ARG = '<tokenSymbol>'
 const GRANT_ROLE_CMD = 'grantMinterRole'
+const SIGNER_NONCE_ARG = '<signerNonce>'
 const WITH_GSN_OPTIONAL_ARG = '--withGSN'
 const PUSH_RAW_TX_CMD = 'pushRawSignedTx'
+const SIGN_DEBUG_CMD = 'signDebugCommand'
 const REVOKE_ROLE_CMD = 'revokeMinterRole'
 const DEPLOY_PTOKEN_CMD = 'deployContract'
 const TRANSFER_TOKEN_CMD = 'transferToken'
@@ -61,6 +66,7 @@ const VERIFY_CONTRACT_CMD = 'verifyContract'
 const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const ORIGIN_CHAIN_ID_ARG = '<originChainId>'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
+const DEBUG_COMMAND_HASH_ARG = '<debugCmdHash>'
 const GET_ACCOUNT_NONCE_CMD = 'getAccountNonce'
 const DEPLOYED_ADDRESS_ARG = '<deployedAddress>'
 const TOKEN_ADMIN_ADDRESS_ARG = '<adminAddress>'
@@ -118,6 +124,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SET_ADMIN_OPERATOR_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG} [${GAS_PRICE_FLAG}=<wei>]
   ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG} [${GAS_PRICE_FLAG}=<wei>]
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG} [${GAS_PRICE_FLAG}=<wei>]
+  ${TOOL_NAME} ${SIGN_DEBUG_CMD} ${CORE_TYPE_ARG} ${SIGNER_NAME_ARG} ${SIGNER_NONCE_ARG} ${DEBUG_COMMAND_HASH_ARG}
   ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG} [${GAS_PRICE_FLAG}=<wei>]
   ${TOOL_NAME} ${ENCODE_INIT_ARGS_CMD} ${TOKEN_NAME_ARG} ${TOKEN_SYMBOL_ARG} ${TOKEN_ADMIN_ADDRESS_ARG} ${ORIGIN_CHAIN_ID_ARG}
   ${TOOL_NAME} ${TRANSFER_TOKEN_CMD} ${DEPLOYED_ADDRESS_ARG} ${RECIPIENT_ARG} ${AMOUNT_ARG} [${GAS_PRICE_FLAG}=<wei>]
@@ -131,6 +138,7 @@ const USAGE_INFO = `
   ${PUSH_RAW_TX_CMD}       ❍ Push ${RAW_TX_ARG} to the network.
   ${VERIFY_CONTRACT_CMD}        ❍ Verify the deployed logic contract.
   ${SEND_ETH_CMD}               ❍ Send ${AMOUNT_ARG} of ETH to ${ETH_ADDRESS_ARG}.
+  ${SIGN_DEBUG_CMD}      ❍ Sign a debug command for a pTokens app.
   ${CHECK_ERC1820_EXISTS_CMD}    ❍ Check the ERC1820 exists on this chain.
   ${GET_TRANSACTION_COUNT_CMD}   ❍ Get the nonce of the passed in ${ETH_ADDRESS_ARG}.
   ${GET_ACCOUNT_NONCE_CMD}       ❍ Get the transaction count of the ${ETH_ADDRESS_ARG}.
@@ -156,11 +164,15 @@ const USAGE_INFO = `
   ${TOKEN_NAME_ARG}           ❍ The name of the pToken.
   ${TOKEN_SYMBOL_ARG}         ❍ The symbol of the pToken.
   ${RAW_TX_ARG}         ❍ A signed tx in hex format.
+  ${SIGNER_NAME_ARG}          ❍ The name of the debug signer.
+  ${SIGNER_NONCE_ARG}         ❍ The nonce of the debug signer.
   ${DEPLOYED_ADDRESS_ARG}     ❍ The ETH address of the deployed pToken.
   ${RECIPIENT_ARG}           ❍ The recipient of the pegged out pTokens.
-  ${ORIGIN_CHAIN_ID_ARG}       ❍ The origin chain ID of this pToken contract.
   ${TOKEN_ADMIN_ADDRESS_ARG}        ❍ The ETH address to administrate the pToken.
+  ${ORIGIN_CHAIN_ID_ARG}       ❍ The origin chain ID of this pToken contract.
   ${USER_DATA_ARG}      ❍ Optional user data in hex format [default: 0x].
+  ${CORE_TYPE_ARG}            ❍ The type of core the signature is destined for.
+  ${DEBUG_COMMAND_HASH_ARG}        ❍ The commitment to the debug command's arguments.
   ${AMOUNT_ARG}              ❍ An amount in the most granular form of the token.
   ${DESTINATION_CHAIN_ID_ARG}  ❍ A destination chain ID as a 'bytes4' solidity type.
   ${SPENDER_ARG}      ❍ An ETH address that may spend tokens on your behalf.
@@ -250,6 +262,13 @@ const main = _ => {
       CLI_ARGS[NETWORK_ARG],
       CLI_ARGS[ORIGIN_CHAIN_ID_ARG],
       convertStringToBool(CLI_ARGS[WITH_GSN_OPTIONAL_ARG]),
+    )
+  } else if (CLI_ARGS[SIGN_DEBUG_CMD]) {
+    return signDebugCommandHash(
+      CLI_ARGS[CORE_TYPE_ARG],
+      CLI_ARGS[SIGNER_NAME_ARG],
+      CLI_ARGS[SIGNER_NONCE_ARG],
+      CLI_ARGS[DEBUG_COMMAND_HASH_ARG],
     )
   }
 }
