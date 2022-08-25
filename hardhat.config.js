@@ -33,7 +33,7 @@ const getAllSupportedNetworks = _ => {
     }' environment variable found! Please provide one! (See 'README.md' for more details)`
     throw new Error(errorMsg)
   } else {
-    SUPPORTED_NETWORKS.reduce((_acc, _network) =>
+    return SUPPORTED_NETWORKS.reduce((_acc, _network) =>
       assoc(_network, { url: process.env[ENDPOINT_ENV_VAR_KEY] }, _acc), {}
     )
   }
