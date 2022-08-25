@@ -22,6 +22,8 @@ const SUPPORTED_NETWORKS = [
   'ambrosTestnet',
   'arbitrum',
   'ethMainnet',
+  'goerli',
+  'sepolia',
 ]
 
 const getAllSupportedNetworks = _ => {
