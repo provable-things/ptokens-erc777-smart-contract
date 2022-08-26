@@ -5,6 +5,7 @@ const {
   revokeMinterRole,
 } = require('./lib/change-minter-role')
 const { docopt } = require('docopt')
+const { mint } = require('./lib/mint')
 const { pegOut } = require('./lib/peg-out')
 const { approve } = require('./lib/approve')
 const { version } = require('./package.json')
@@ -32,6 +33,7 @@ const { checkErc1820RegistryExists } = require('./lib/check-erc1820-registry-exi
 const { showExistingPTokenContractAddresses } = require('./lib/show-existing-logic-contract-addresses')
 
 const MSG_ARG = '<msg>'
+const MINT_CMD = 'mint'
 const HELP_ARG = '--help'
 const TOOL_NAME = 'cli.js'
 const PEG_OUT_CMD = 'pegOut'
@@ -121,8 +123,9 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SEND_ETH_CMD} ${ETH_ADDRESS_ARG} ${AMOUNT_ARG} [${GAS_PRICE_FLAG}=<wei>]
   ${TOOL_NAME} ${DEPLOY_PTOKEN_CMD} [${WITH_GSN_ARG}] [${GAS_PRICE_FLAG}=<wei>]
   ${TOOL_NAME} ${VERIFY_CONTRACT_CMD} ${NETWORK_ARG} ${DEPLOYED_ADDRESS_ARG} [${WITH_GSN_ARG}]
-  ${TOOL_NAME} ${SET_ADMIN_OPERATOR_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG} [${GAS_PRICE_FLAG}=<wei>]
+  ${TOOL_NAME} ${MINT_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG} ${AMOUNT_ARG} [${GAS_PRICE_FLAG}=<wei>]
   ${TOOL_NAME} ${GRANT_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG} [${GAS_PRICE_FLAG}=<wei>]
+  ${TOOL_NAME} ${SET_ADMIN_OPERATOR_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG} [${GAS_PRICE_FLAG}=<wei>]
   ${TOOL_NAME} ${REVOKE_ROLE_CMD} ${DEPLOYED_ADDRESS_ARG} ${ETH_ADDRESS_ARG} [${GAS_PRICE_FLAG}=<wei>]
   ${TOOL_NAME} ${SIGN_DEBUG_CMD} ${CORE_TYPE_ARG} ${SIGNER_NAME_ARG} ${SIGNER_NONCE_ARG} ${DEBUG_COMMAND_HASH_ARG}
   ${TOOL_NAME} ${APPROVE_CMD} ${DEPLOYED_ADDRESS_ARG} ${SPENDER_ARG} ${AMOUNT_ARG} [${GAS_PRICE_FLAG}=<wei>]
@@ -145,6 +148,7 @@ const USAGE_INFO = `
   ${GET_ORIGIN_CHAIN_ID_CMD}      ❍ Get origin chain ID of contract at ${DEPLOYED_ADDRESS_ARG}.
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
+  ${MINT_CMD}                  ❍ Mint the ${AMOUNT_ARG} of tokens @ ${DEPLOYED_ADDRESS_ARG} to ${ETH_ADDRESS_ARG}.
   ${SHOW_WALLET_DETAILS_CMD}     ❍ Decrypts the private key and shows address & balance information.
   ${SET_ADMIN_OPERATOR_CMD}      ❍ Set admin operator of contract @ ${DEPLOYED_ADDRESS_ARG} to ${ETH_ADDRESS_ARG}.
   ${ENCODE_INIT_ARGS_CMD}        ❍ Calculate the initializer function arguments in ABI encoded format.
@@ -226,6 +230,13 @@ const main = _ => {
     return signMessage(CLI_ARGS[MSG_ARG])
   } else if (CLI_ARGS[SET_ADMIN_OPERATOR_CMD]) {
     return setAdminOperator(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG], CLI_ARGS[GAS_PRICE_FLAG])
+  } else if (CLI_ARGS[MINT_CMD]) {
+    return mint(
+      CLI_ARGS[DEPLOYED_ADDRESS_ARG],
+      CLI_ARGS[ETH_ADDRESS_ARG],
+      CLI_ARGS[AMOUNT_ARG],
+      CLI_ARGS[GAS_PRICE_FLAG],
+    )
   } else if (CLI_ARGS[ENCODE_INIT_ARGS_CMD]) {
     return showEncodedInitArgs(
       CLI_ARGS[TOKEN_NAME_ARG],
