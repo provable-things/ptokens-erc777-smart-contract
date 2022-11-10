@@ -15,6 +15,9 @@ const getContractNameFromCliArgs = _ =>
 // NOTE: This script accepts a contract name (which contract MUST exist in the `./contracts/` dir!)
 // passed in via a command line arg. The script then compares that contract to the latest version of
 // the pToken contract in this repo to check for storage incompatibilities.
+//
+// USAGE:
+// `npm run checkStorageCompatibility <contractNameWithNoFileTypeExtension>`
 
 const main = _ =>
   getContractNameFromCliArgs()
