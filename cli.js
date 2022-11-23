@@ -18,6 +18,7 @@ const { showBalanceOf } = require('./lib/get-balance-of')
 const { hasMinterRole } = require('./lib/has-minter-role')
 const { deployContract } = require('./lib/deploy-contract')
 const { verifyContract } = require('./lib/verify-contract')
+const { showTotalSupply } = require('./lib/show-total-supply')
 const { flattenContract } = require('./lib/flatten-contract')
 const { getAccountNonce } = require('./lib/get_account_nonce')
 const { signDebugCommandHash } = require('./lib/eip712-signer')
@@ -67,6 +68,7 @@ const DEPLOY_WETH_CMD = 'deployWethContract'
 const VERIFY_CONTRACT_CMD = 'verifyContract'
 const ENCODE_INIT_ARGS_CMD = 'encodeInitArgs'
 const ORIGIN_CHAIN_ID_ARG = '<originChainId>'
+const SHOW_TOTAL_SUPPLY_CMD = 'showTotalSupply'
 const FLATTEN_CONTRACT_CMD = 'flattenContract'
 const DEBUG_COMMAND_HASH_ARG = '<debugCmdHash>'
 const GET_ACCOUNT_NONCE_CMD = 'getAccountNonce'
@@ -114,6 +116,7 @@ const USAGE_INFO = `
   ${TOOL_NAME} ${SHOW_EXISTING_CONTRACTS_CMD}
   ${TOOL_NAME} ${GET_ACCOUNT_NONCE_CMD} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${PUSH_RAW_TX_CMD} ${RAW_TX_ARG}
+  ${TOOL_NAME} ${SHOW_TOTAL_SUPPLY_CMD} ${DEPLOYED_ADDRESS_ARG}
   ${TOOL_NAME} ${GET_TRANSACTION_COUNT_CMD} ${ETH_ADDRESS_ARG}
   ${TOOL_NAME} ${FLATTEN_CONTRACT_CMD} [${WITH_GSN_ARG}]
   ${TOOL_NAME} ${GET_ORIGIN_CHAIN_ID_CMD} ${DEPLOYED_ADDRESS_ARG}
@@ -146,6 +149,7 @@ const USAGE_INFO = `
   ${GET_TRANSACTION_COUNT_CMD}   ❍ Get the nonce of the passed in ${ETH_ADDRESS_ARG}.
   ${GET_ACCOUNT_NONCE_CMD}       ❍ Get the transaction count of the ${ETH_ADDRESS_ARG}.
   ${GET_ORIGIN_CHAIN_ID_CMD}      ❍ Get origin chain ID of contract at ${DEPLOYED_ADDRESS_ARG}.
+  ${SHOW_TOTAL_SUPPLY_CMD}         ❍ Display the total supply for an ERC777 token
   ${GET_BALANCE_CMD}          ❍ Get balance of ${ETH_ADDRESS_ARG} of pToken at ${DEPLOYED_ADDRESS_ARG}.
   ${TRANSFER_TOKEN_CMD}         ❍ Transfer ${AMOUNT_ARG} of token @ ${DEPLOYED_ADDRESS_ARG} to ${RECIPIENT_ARG}.
   ${MINT_CMD}                  ❍ Mint the ${AMOUNT_ARG} of tokens @ ${DEPLOYED_ADDRESS_ARG} to ${ETH_ADDRESS_ARG}.
@@ -198,6 +202,8 @@ const main = _ => {
     return deployContract(convertStringToBool(CLI_ARGS[WITH_GSN_OPTIONAL_ARG], CLI_ARGS[GAS_PRICE_FLAG]))
   } else if (CLI_ARGS[FLATTEN_CONTRACT_CMD]) {
     return flattenContract(convertStringToBool(CLI_ARGS[WITH_GSN_OPTIONAL_ARG]))
+  } else if (CLI_ARGS[SHOW_TOTAL_SUPPLY_CMD]) {
+    return showTotalSupply(CLI_ARGS[DEPLOYED_ADDRESS_ARG])
   } else if (CLI_ARGS[GET_BALANCE_CMD]) {
     return showBalanceOf(CLI_ARGS[DEPLOYED_ADDRESS_ARG], CLI_ARGS[ETH_ADDRESS_ARG])
   } else if (CLI_ARGS[GRANT_ROLE_CMD]) {
