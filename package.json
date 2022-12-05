@@ -1,13 +1,14 @@
 {
   "name": "ptokens-erc777-smart-contract",
-  "version": "3.9.1",
+  "version": "3.10.0",
   "description": "The pToken ERC777 smart-contract & CLI",
   "main": "cli.js",
   "scripts": {
-    "compile": "npx hardhat compile",
+    "compile": "ENDPOINT=0.0.0.0 npx hardhat compile",
     "tests": "ENDPOINT=http://localhost:8545 npx hardhat test",
     "test": "npm run tests",
-    "lint": "npx eslint ./"
+    "lint": "npx eslint ./",
+    "checkStorageCompatibility": "npm run compile && ENDPOINT=0.0.0.0 node ./scripts/check-storage-compatibility"
   },
   "repository": {
     "type": "git",
