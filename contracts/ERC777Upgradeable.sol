@@ -359,7 +359,6 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
      * @param amount uint256 amount of tokens to transfer
      * @param userData bytes extra information provided by the token holder (if any)
      * @param operatorData bytes extra information provided by the operator (if any)
-     * @param requireReceptionAck if true, contract recipients are required to implement ERC777TokensRecipient
      */
     function _send(
         address from,
@@ -367,7 +366,7 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         uint256 amount,
         bytes memory userData,
         bytes memory operatorData,
-        bool requireReceptionAck
+        bool /* requireReceptionAck */
     )
         internal
         virtual

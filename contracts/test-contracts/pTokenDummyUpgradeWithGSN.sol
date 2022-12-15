@@ -1,10 +1,10 @@
 pragma solidity ^0.6.2;
 
 import "../ERC777GSN.sol";
+import "../ERC777Upgradeable.sol";
 import "../ERC777WithAdminOperatorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "./ERC777Upgradeable.sol";
 
 contract PTokenDummyUpgradeWithGSN is
     Initializable,
