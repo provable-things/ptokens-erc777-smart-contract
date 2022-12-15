@@ -31,11 +31,10 @@ const main = _ =>
       console.info('✔ Contracts retreived! Checking compatibility...')
       return upgrades.validateUpgrade(a, b)
     })
-    .then(_ => console.info('✔ Storage IS compatible!'))
+    .then(__ => console.info('✔ Storage IS compatible!'))
     .catch(_err => {
-      if (_err.message.includes('HH700')) {
+      if (_err.message.includes('HH700'))
         console.info('✘ Could not find contract! Make sure it exists in the `./contracts` dir!')
-      }
       return Promise.reject(_err)
     })
 
