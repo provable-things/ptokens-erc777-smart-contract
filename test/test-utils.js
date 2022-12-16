@@ -73,12 +73,19 @@ const getPtokenContractWithGSN = getPTokenContract(true)
 
 const getPtokenContractWithoutGSN = getPTokenContract(false)
 
+const getRandomEthAddress = _ => {
+  /* eslint-disable-next-line new-cap */
+  const wallet = new ethers.Wallet.createRandom()
+  return prop('address', wallet)
+}
+
 module.exports = {
   getTokenBalance,
   assertBurnEvent,
   assertMintEvent,
   assertRedeemEvent,
   assertTransferEvent,
+  getRandomEthAddress,
   mintTokensToAccounts,
   fixSignaturePerEIP155,
   getPtokenContractWithGSN,
