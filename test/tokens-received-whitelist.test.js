@@ -14,14 +14,16 @@ const assert = require('assert')
 const { BigNumber } = require('ethers')
 const { getPtokenContractWithGSN } = require('./test-utils')
 
-describe.only('Tokens-Received Hook Whitelist Tests', () => {
+describe('Tokens-Received Hook Whitelist Tests', () => {
   const AMOUNT = 12345
   const ERC777_RECIPIENT_CONTRACT_PATH = 'contracts/test-contracts/MockERC777Recipient.sol:MockErc777Recipient'
+  /* eslint-disable-next-line max-len */
+  const NON_ERC777_RECIPIENT_CONTRACT_PATH = 'contracts/test-contracts/MockNonERC777Recipient.sol:MockNonErc777Recipient'
   let OWNER, NON_OWNER, CONTRACT, OWNER_ADDRESS, NON_OWNER_ADDRESS
 
-  const getErc777RecipientContract = _ =>
+  const getReceivingContract = (_erc777Recipient = true) =>
     ethers
-      .getContractFactory(ERC777_RECIPIENT_CONTRACT_PATH)
+      .getContractFactory(_erc777Recipient ? ERC777_RECIPIENT_CONTRACT_PATH : NON_ERC777_RECIPIENT_CONTRACT_PATH)
       .then(_factory => _factory.deploy())
       .then(_contract => Promise.all([ _contract, _contract.deployTransaction.wait() ]))
       .then(([ _contract ]) => _contract)
@@ -93,7 +95,7 @@ describe.only('Tokens-Received Hook Whitelist Tests', () => {
     })
 
     it('Should not mint to a contract that does not support ERC1820 if whitelisted', async () => {
-      const mockRecipient = await getErc777RecipientContract()
+      const mockRecipient = await getReceivingContract()
       const addressToMintTo = mockRecipient.address
       await CONTRACT.addToTokensReceivedWhitelist(addressToMintTo)
       assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToMintTo), true)
@@ -110,14 +112,14 @@ describe.only('Tokens-Received Hook Whitelist Tests', () => {
 
     it('Should mint to a contract that does not support ERC1820 if not whitelisted', async () => {
       // ...because the non-existent `tokensReceivedHook` does not get called...
-      const mockRecipient = await getErc777RecipientContract()
+      const mockRecipient = await getReceivingContract()
       const addressToMintTo = mockRecipient.address
       assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToMintTo), false)
       await CONTRACT['mint(address,uint256)'](addressToMintTo, AMOUNT)
     })
 
     it('Should call `tokensReceivedHook` in ERC777-supporting contract if whitelisted', async () => {
-      const recipient = await getErc777RecipientContract()
+      const recipient = await getReceivingContract()
       await recipient.initERC1820()
       const addressToMintTo = recipient.address
       await CONTRACT.addToTokensReceivedWhitelist(addressToMintTo)
@@ -131,7 +133,7 @@ describe.only('Tokens-Received Hook Whitelist Tests', () => {
     })
 
     it('Should not call `tokensReceivedHook` in ERC777-supporting contract if not whitelisted', async () => {
-      const recipient = await getErc777RecipientContract()
+      const recipient = await getReceivingContract()
       await recipient.initERC1820()
       const addressToMintTo = recipient.address
       assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToMintTo), false)
@@ -143,7 +145,60 @@ describe.only('Tokens-Received Hook Whitelist Tests', () => {
       assert.strictEqual(await recipient.tokenReceivedCalled(), false)
     })
 
-    it('Should call tokens recevied hook on transfer if whitelisted')
-    it('Should not call tokens recevied hook on transfer if not whitelisted')
+    it('Should call tokens received hook upon transfer if whitelisted', async () => {
+      const recipient = await getReceivingContract()
+      await recipient.initERC1820()
+      const addressToTransferTo = recipient.address
+      await CONTRACT.addToTokensReceivedWhitelist(addressToTransferTo)
+      assert(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToTransferTo), true)
+      await CONTRACT['mint(address,uint256)'](OWNER_ADDRESS, AMOUNT)
+      const recipientBalanceBefore = await CONTRACT.balanceOf(addressToTransferTo)
+      assert(recipientBalanceBefore.eq(BigNumber.from(0)))
+      CONTRACT.transfer(addressToTransferTo, AMOUNT)
+      const recipientBalanceAfter = await CONTRACT.balanceOf(addressToTransferTo)
+      assert(recipientBalanceAfter.eq(BigNumber.from(AMOUNT)))
+      assert.strictEqual(await recipient.tokenReceivedCalled(), true)
+    })
+
+    it('Should not call tokens received hook on transfer if not whitelisted', async () => {
+      const recipient = await getReceivingContract()
+      await recipient.initERC1820()
+      const addressToTransferTo = recipient.address
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToTransferTo), false)
+      await CONTRACT['mint(address,uint256)'](OWNER_ADDRESS, AMOUNT)
+      const recipientBalanceBefore = await CONTRACT.balanceOf(addressToTransferTo)
+      assert(recipientBalanceBefore.eq(BigNumber.from(0)))
+      CONTRACT.transfer(addressToTransferTo, AMOUNT)
+      const recipientBalanceAfter = await CONTRACT.balanceOf(addressToTransferTo)
+      assert(recipientBalanceAfter.eq(BigNumber.from(AMOUNT)))
+      assert.strictEqual(await recipient.tokenReceivedCalled(), false)
+    })
+
+    it('Should transfer successfully if not ERC777 recipient and not whitelisted', async () => {
+      const isErc777Recipient = false
+      const recipient = await getReceivingContract(isErc777Recipient)
+      const addressToTransferTo = recipient.address
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToTransferTo), false)
+      await CONTRACT['mint(address,uint256)'](OWNER_ADDRESS, AMOUNT)
+      const recipientBalanceBefore = await CONTRACT.balanceOf(addressToTransferTo)
+      assert(recipientBalanceBefore.eq(BigNumber.from(0)))
+      CONTRACT.transfer(addressToTransferTo, AMOUNT)
+      const recipientBalanceAfter = await CONTRACT.balanceOf(addressToTransferTo)
+      assert(recipientBalanceAfter.eq(BigNumber.from(AMOUNT)))
+    })
+
+    it('Should transfer successfully if not ERC777 recipient and is whitelisted', async () => {
+      const isErc777Recipient = false
+      const recipient = await getReceivingContract(isErc777Recipient)
+      const addressToTransferTo = recipient.address
+      await CONTRACT.addToTokensReceivedWhitelist(addressToTransferTo)
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToTransferTo), true)
+      await CONTRACT['mint(address,uint256)'](OWNER_ADDRESS, AMOUNT)
+      const recipientBalanceBefore = await CONTRACT.balanceOf(addressToTransferTo)
+      assert(recipientBalanceBefore.eq(BigNumber.from(0)))
+      CONTRACT.transfer(addressToTransferTo, AMOUNT)
+      const recipientBalanceAfter = await CONTRACT.balanceOf(addressToTransferTo)
+      assert(recipientBalanceAfter.eq(BigNumber.from(AMOUNT)))
+    })
   })
 })
