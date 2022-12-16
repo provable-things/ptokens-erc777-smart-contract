@@ -193,4 +193,8 @@ contract PToken is
     function getTokensReceivedWhitelistEntryAt(uint256 _index) view public returns (address) {
         return TOKENS_RECEIVED_HOOK_WHITELIST.at(_index);
     }
+
+    function tokensReceivedWhitelistContains(address _address) view public returns (bool) {
+        return TOKENS_RECEIVED_HOOK_WHITELIST.contains(_address);
+    }
 }
