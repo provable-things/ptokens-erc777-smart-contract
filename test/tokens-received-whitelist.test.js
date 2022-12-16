@@ -14,7 +14,7 @@ const assert = require('assert')
 const { BigNumber } = require('ethers')
 const { getPtokenContractWithGSN } = require('./test-utils')
 
-describe('Tokens-Received Hook Whitelist Tests', () => {
+describe.only('Tokens-Received Hook Whitelist Tests', () => {
   const AMOUNT = 12345
   const ERC777_RECIPIENT_CONTRACT_PATH = 'contracts/test-contracts/MockERC777Recipient.sol:MockErc777Recipient'
   let OWNER, NON_OWNER, CONTRACT, OWNER_ADDRESS, NON_OWNER_ADDRESS

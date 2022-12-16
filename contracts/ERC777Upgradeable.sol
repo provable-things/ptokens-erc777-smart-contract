@@ -64,6 +64,8 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
     // ERC20-allowances
     mapping (address => mapping (address => uint256)) private _allowances;
 
+    mapping (address => bool) public TOKENS_RECEIVED_HOOK_WHITELIST;
+
     /**
      * @dev `defaultOperators` may be an empty array.
      */
@@ -168,8 +170,7 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
 
         _move(from, from, recipient, amount, "", "");
 
-        // NOTE: Disabling ALL hooks.
-        //_callTokensReceived(from, from, recipient, amount, "", "", false);
+        _callTokensReceived(from, from, recipient, amount, "", "", false);
 
         return true;
     }
@@ -302,8 +303,7 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         _move(spender, holder, recipient, amount, "", "");
         _approve(holder, spender, _allowances[holder][spender].sub(amount, "ERC777: transfer amount exceeds allowance"));
 
-        // NOTE:
-        //_callTokensReceived(spender, holder, recipient, amount, "", "", false);
+        _callTokensReceived(spender, holder, recipient, amount, "", "", false);
 
         return true;
     }
@@ -329,8 +329,7 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         address account,
         uint256 amount,
         bytes memory userData,
-        bytes memory operatorData,
-        bool callTokensReceivedHook
+        bytes memory operatorData
     )
         internal
         virtual
@@ -346,9 +345,7 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         _totalSupply = _totalSupply.add(amount);
         _balances[account] = _balances[account].add(amount);
 
-        if (callTokensReceivedHook) {
-            _callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
-        }
+        _callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
 
         emit Minted(operator, account, amount, userData, operatorData);
         emit Transfer(address(0), account, amount);
@@ -368,7 +365,7 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         uint256 amount,
         bytes memory userData,
         bytes memory operatorData,
-        bool /* requireReceptionAck */
+        bool requireReceptionAck
     )
         internal
         virtual
@@ -383,8 +380,7 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
 
         _move(operator, from, to, amount, userData, operatorData);
 
-        // NOTE: Disabling ALL hooks.
-        //_callTokensReceived(operator, from, to, amount, userData, operatorData, requireReceptionAck);
+        _callTokensReceived(operator, from, to, amount, userData, operatorData, requireReceptionAck);
     }
 
     /**
@@ -496,11 +492,15 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         address to,
         uint256 amount,
         bytes memory userData,
-    bytes memory operatorData,
-    bool requireReceptionAck
-)
-    private
-{
+        bytes memory operatorData,
+        bool requireReceptionAck
+    )
+        private
+    {
+        if (!TOKENS_RECEIVED_HOOK_WHITELIST[to]) {
+            // NOTE: Only allow `tokensReceived` hook to be called in whitelisted addresses!
+            return;
+        }
 
         address implementer = _ERC1820_REGISTRY.getInterfaceImplementer(to, _TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
@@ -525,5 +525,5 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
     function _beforeTokenTransfer(address operator, address from, address to, uint256 amount) internal virtual { }
-    uint256[41] private __gap;
+    uint256[40] private __gap;
 }

@@ -14,7 +14,6 @@ contract PToken is
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes4 public ORIGIN_CHAIN_ID;
-    mapping (address => bool) public TOKENS_RECEIVED_HOOK_WHITELIST;
 
     event Redeem(
         address indexed redeemer,
@@ -79,7 +78,7 @@ contract PToken is
             recipient != address(this) ,
             "Recipient cannot be the token contract address!"
         );
-        _mint(recipient, value, userData, operatorData, TOKENS_RECEIVED_HOOK_WHITELIST[recipient]);
+        _mint(recipient, value, userData, operatorData);
         return true;
     }
 

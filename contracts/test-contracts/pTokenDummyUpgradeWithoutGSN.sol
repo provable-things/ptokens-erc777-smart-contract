@@ -13,7 +13,6 @@ contract PTokenDummyUpgradeWithoutGSN is
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes4 public ORIGIN_CHAIN_ID;
-    mapping (address => bool) public TOKENS_RECEIVED_HOOK_WHITELIST;
     mapping(bytes4 => bool) public SUPPORTED_DESTINATION_CHAIN_IDS;
 
     event Redeem(
@@ -60,8 +59,7 @@ contract PTokenDummyUpgradeWithoutGSN is
         returns (bool)
     {
         require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
-        // NOTE: The last arg disables the `tokensReceived` hook from being called.
-        _mint(recipient, value, userData, operatorData, false);
+        _mint(recipient, value, userData, operatorData);
         return true;
     }
 

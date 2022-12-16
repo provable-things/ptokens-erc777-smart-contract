@@ -78,8 +78,7 @@ contract PTokenNoGSN is
             recipient != address(this) ,
             "Recipient cannot be the token contract address!"
         );
-        // NOTE: The last arg disables the `tokensReceived` hook from being called.
-        _mint(recipient, value, userData, operatorData, false);
+        _mint(recipient, value, userData, operatorData);
         return true;
     }
 
