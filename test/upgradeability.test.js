@@ -1,4 +1,5 @@
 const { exec } = require('node:child_process')
+const { platform } = require('process')
 /* eslint-disable-next-line no-shadow */
 const { ethers, upgrades } = require('hardhat')
 const { rmSync, unlinkSync, existsSync } = require('fs')
@@ -21,7 +22,8 @@ const getFlattenedContractFromMasterBranch = _ => {
   git checkout master && \
   node cli.js flattenContract && \
   mv ./flattened.sol .${CONTRACT_FROM_MASTER_PATH} && \
-  sed -i 's/contract PToken is/contract PTokenMaster is/g' .${CONTRACT_FROM_MASTER_PATH} && \
+  sed -i ${platform === 'darwin' ? ' \'\' -e' : ''} 's/contract PToken is/contract \
+  PTokenMaster is/g' .${CONTRACT_FROM_MASTER_PATH} && \
   cd ../ && \
   npm run compile`
 
