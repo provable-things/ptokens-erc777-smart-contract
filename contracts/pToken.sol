@@ -3,7 +3,9 @@ pragma solidity ^0.6.2;
 import "./ERC777GSN.sol";
 import "./ERC777WithAdminOperatorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+
 
 contract PToken is
     Initializable,
@@ -11,8 +13,11 @@ contract PToken is
     ERC777GSNUpgradeable,
     ERC777WithAdminOperatorUpgradeable
 {
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
+
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes4 public ORIGIN_CHAIN_ID;
+    EnumerableSetUpgradeable.AddressSet private TOKENS_RECEIVED_HOOK_WHITELIST;
 
     event Redeem(
         address indexed redeemer,
@@ -22,6 +27,8 @@ contract PToken is
         bytes4 originChainId,
         bytes4 destinationChainId
     );
+
+    event TokensReceivedHookWhitelistChange(address indexed theAddress, bool wasAdded);
 
     function initialize(
         string memory tokenName,
@@ -167,5 +174,23 @@ contract PToken is
     {
         ORIGIN_CHAIN_ID = _newOriginChainId;
         return true;
+    }
+
+    function addToTokensReceivedWhitelist(address _address) public onlyAdmin {
+        if (!TOKENS_RECEIVED_HOOK_WHITELIST.contains(_address)) {
+            TOKENS_RECEIVED_HOOK_WHITELIST.add(_address);
+            emit TokensReceivedHookWhitelistChange(_address, true);
+        }
+    }
+
+    function removeFromTokensReceivedWhitelist(address _address) public onlyAdmin {
+        if (TOKENS_RECEIVED_HOOK_WHITELIST.contains(_address)) {
+            TOKENS_RECEIVED_HOOK_WHITELIST.remove(_address);
+            emit TokensReceivedHookWhitelistChange(_address, false);
+        }
+    }
+
+    function getTokensReceivedWhitelistEntryAt(uint256 _index) view public returns (address) {
+        return TOKENS_RECEIVED_HOOK_WHITELIST.at(_index);
     }
 }
