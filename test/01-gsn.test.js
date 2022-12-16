@@ -18,7 +18,7 @@ const Web3Contract = require('web3-eth-contract')
 const { getAbi } = require('../lib/get-contract-artifacts')
 const { GSNDevProvider } = require('@openzeppelin/gsn-provider')
 
-describe('pToken ERC777GSN Tests', () => {
+describe.skip('pToken ERC777GSN Tests', () => {
   silenceConsoleInfoOutput()
   const AMOUNT = 12345
   let relayer,
