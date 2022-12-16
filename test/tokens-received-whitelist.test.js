@@ -40,13 +40,12 @@ describe('Tokens-Received Hook Whitelist Tests', () => {
   })
 
   describe('Add address to tokens-received whitelist', () => {
-    const INDEX = 0
     const ADDRESS = getRandomEthAddress()
 
     it('Owner can add to tokens received whitelist', async () => {
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(ADDRESS), false)
       await CONTRACT.addToTokensReceivedWhitelist(ADDRESS)
-      const result = await CONTRACT.getTokensReceivedWhitelistEntryAt(INDEX)
-      assert.strictEqual(result, ADDRESS)
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(ADDRESS), true)
     })
 
     it('Non owner cannot add to tokens received whitelist', async () => {
@@ -57,38 +56,23 @@ describe('Tokens-Received Hook Whitelist Tests', () => {
         const expectedErr = 'Caller is not an admin'
         assert(_err.message.includes(expectedErr))
       }
-      try {
-        await CONTRACT.getTokensReceivedWhitelistEntryAt(INDEX)
-        assert.fail('Should not have succeeded!')
-      } catch (_err) {
-        const expectedErr = 'index out of bounds'
-        assert(_err.message.includes(expectedErr))
-      }
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(ADDRESS), false)
     })
   })
 
   describe('Remove address from tokens-received whitelist', () => {
-    const INDEX = 0
     const ADDRESS = getRandomEthAddress()
 
     it('Owner can remove from tokens received whitelist', async () => {
       await CONTRACT.addToTokensReceivedWhitelist(ADDRESS)
-      const addressBefore = await CONTRACT.getTokensReceivedWhitelistEntryAt(INDEX)
-      assert.strictEqual(addressBefore, ADDRESS)
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(ADDRESS), true)
       await CONTRACT.removeFromTokensReceivedWhitelist(ADDRESS)
-      try {
-        await CONTRACT.getTokensReceivedWhitelistEntryAt(INDEX)
-        assert.fail('Should not have succeeded!')
-      } catch (_err) {
-        const expectedErr = 'index out of bounds'
-        assert(_err.message.includes(expectedErr))
-      }
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(ADDRESS), false)
     })
 
     it('Non owner cannot remove from tokens received whitelist', async () => {
       await CONTRACT.addToTokensReceivedWhitelist(ADDRESS)
-      const addressBefore = await CONTRACT.getTokensReceivedWhitelistEntryAt(INDEX)
-      assert.strictEqual(addressBefore, ADDRESS)
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(ADDRESS), true)
       try {
         await CONTRACT.connect(NON_OWNER).removeFromTokensReceivedWhitelist(ADDRESS)
         assert.fail('Should not have succeeded!')
@@ -112,7 +96,7 @@ describe('Tokens-Received Hook Whitelist Tests', () => {
       const mockRecipient = await getErc777RecipientContract()
       const addressToMintTo = mockRecipient.address
       await CONTRACT.addToTokensReceivedWhitelist(addressToMintTo)
-      assert.strictEqual(await CONTRACT.tokensReceivedWhitelistContains(addressToMintTo), true)
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToMintTo), true)
       try {
         await CONTRACT['mint(address,uint256)'](addressToMintTo, AMOUNT)
         assert.fail('Should not have succeeded!')
@@ -128,7 +112,7 @@ describe('Tokens-Received Hook Whitelist Tests', () => {
       // ...because the non-existent `tokensReceivedHook` does not get called...
       const mockRecipient = await getErc777RecipientContract()
       const addressToMintTo = mockRecipient.address
-      assert.strictEqual(await CONTRACT.tokensReceivedWhitelistContains(addressToMintTo), false)
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToMintTo), false)
       await CONTRACT['mint(address,uint256)'](addressToMintTo, AMOUNT)
     })
 
@@ -137,7 +121,7 @@ describe('Tokens-Received Hook Whitelist Tests', () => {
       await recipient.initERC1820()
       const addressToMintTo = recipient.address
       await CONTRACT.addToTokensReceivedWhitelist(addressToMintTo)
-      assert.strictEqual(await CONTRACT.tokensReceivedWhitelistContains(addressToMintTo), true)
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToMintTo), true)
       const tx = await CONTRACT['mint(address,uint256)'](addressToMintTo, AMOUNT)
       const { events } = await tx.wait()
       await assertTransferEvent(events, ZERO_ADDRESS, addressToMintTo, AMOUNT)
@@ -150,7 +134,7 @@ describe('Tokens-Received Hook Whitelist Tests', () => {
       const recipient = await getErc777RecipientContract()
       await recipient.initERC1820()
       const addressToMintTo = recipient.address
-      assert.strictEqual(await CONTRACT.tokensReceivedWhitelistContains(addressToMintTo), false)
+      assert.strictEqual(await CONTRACT.TOKENS_RECEIVED_HOOK_WHITELIST(addressToMintTo), false)
       const tx = await CONTRACT['mint(address,uint256)'](addressToMintTo, AMOUNT)
       const { events } = await tx.wait()
       await assertTransferEvent(events, ZERO_ADDRESS, addressToMintTo, AMOUNT)
@@ -158,5 +142,8 @@ describe('Tokens-Received Hook Whitelist Tests', () => {
       assert(pTokenContractBalance.eq(BigNumber.from(AMOUNT)))
       assert.strictEqual(await recipient.tokenReceivedCalled(), false)
     })
+
+    it('Should call tokens recevied hook on transfer if whitelisted')
+    it('Should not call tokens recevied hook on transfer if not whitelisted')
   })
 })

@@ -3,7 +3,6 @@ pragma solidity ^0.6.2;
 import "../ERC777Upgradeable.sol";
 import "../ERC777WithAdminOperatorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 contract PTokenDummyUpgradeWithoutGSN is
@@ -14,7 +13,7 @@ contract PTokenDummyUpgradeWithoutGSN is
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes4 public ORIGIN_CHAIN_ID;
-    EnumerableSetUpgradeable.AddressSet private TOKENS_RECEIVED_HOOK_WHITELIST;
+    mapping (address => bool) public TOKENS_RECEIVED_HOOK_WHITELIST;
     mapping(bytes4 => bool) public SUPPORTED_DESTINATION_CHAIN_IDS;
 
     event Redeem(
