@@ -61,7 +61,8 @@ contract PTokenDummyUpgradeWithoutGSN is
         returns (bool)
     {
         require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");
-        _mint(recipient, value, userData, operatorData);
+        // NOTE: The last arg disables the `tokensReceived` hook from being called.
+        _mint(recipient, value, userData, operatorData, false);
         return true;
     }
 

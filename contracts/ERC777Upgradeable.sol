@@ -329,7 +329,8 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         address account,
         uint256 amount,
         bytes memory userData,
-        bytes memory operatorData
+        bytes memory operatorData,
+        bool callTokensReceivedHook
     )
         internal
         virtual
@@ -338,15 +339,16 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
 
         address operator = _msgSender();
 
-        // NOTE: Disabling ALL hooks.
+        // NOTE: Disabling hooks.
         //_beforeTokenTransfer(operator, address(0), account, amount);
 
         // Update state variables
         _totalSupply = _totalSupply.add(amount);
         _balances[account] = _balances[account].add(amount);
 
-        // NOTE: Disabling ALL hooks.
-        //_callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
+        if (callTokensReceivedHook) {
+            _callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
+        }
 
         emit Minted(operator, account, amount, userData, operatorData);
         emit Transfer(address(0), account, amount);
@@ -494,11 +496,12 @@ contract ERC777Upgradeable is Initializable, ContextUpgradeable, IERC777Upgradea
         address to,
         uint256 amount,
         bytes memory userData,
-        bytes memory operatorData,
-        bool requireReceptionAck
-    )
-        private
-    {
+    bytes memory operatorData,
+    bool requireReceptionAck
+)
+    private
+{
+
         address implementer = _ERC1820_REGISTRY.getInterfaceImplementer(to, _TOKENS_RECIPIENT_INTERFACE_HASH);
         if (implementer != address(0)) {
             IERC777RecipientUpgradeable(implementer).tokensReceived(operator, from, to, amount, userData, operatorData);

@@ -82,7 +82,7 @@ contract PToken is
             recipient != address(this) ,
             "Recipient cannot be the token contract address!"
         );
-        _mint(recipient, value, userData, operatorData);
+        _mint(recipient, value, userData, operatorData, TOKENS_RECEIVED_HOOK_WHITELIST.contains(recipient));
         return true;
     }
 
