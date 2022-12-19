@@ -172,14 +172,14 @@ contract PToken is
         return true;
     }
 
-    function addToTokensReceivedWhitelist(address _address) public onlyAdmin {
+    function addToTokensReceivedWhitelist(address _address) external onlyAdmin {
         if (!TOKENS_RECEIVED_HOOK_WHITELIST[_address]) {
             TOKENS_RECEIVED_HOOK_WHITELIST[_address] = true;
             emit TokensReceivedHookWhitelistChange(_address, true);
         }
     }
 
-    function removeFromTokensReceivedWhitelist(address _address) public onlyAdmin {
+    function removeFromTokensReceivedWhitelist(address _address) external onlyAdmin {
         if (TOKENS_RECEIVED_HOOK_WHITELIST[_address]) {
             delete TOKENS_RECEIVED_HOOK_WHITELIST[_address];
             emit TokensReceivedHookWhitelistChange(_address, false);
