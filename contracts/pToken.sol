@@ -5,6 +5,7 @@ import "./ERC777WithAdminOperatorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
+
 contract PToken is
     Initializable,
     AccessControlUpgradeable,
@@ -22,6 +23,8 @@ contract PToken is
         bytes4 originChainId,
         bytes4 destinationChainId
     );
+
+    event TokensReceivedHookWhitelistChange(address indexed theAddress, bool wasAdded);
 
     function initialize(
         string memory tokenName,
@@ -167,5 +170,19 @@ contract PToken is
     {
         ORIGIN_CHAIN_ID = _newOriginChainId;
         return true;
+    }
+
+    function addToTokensReceivedWhitelist(address _address) external onlyAdmin {
+        if (!TOKENS_RECEIVED_HOOK_WHITELIST[_address]) {
+            TOKENS_RECEIVED_HOOK_WHITELIST[_address] = true;
+            emit TokensReceivedHookWhitelistChange(_address, true);
+        }
+    }
+
+    function removeFromTokensReceivedWhitelist(address _address) external onlyAdmin {
+        if (TOKENS_RECEIVED_HOOK_WHITELIST[_address]) {
+            delete TOKENS_RECEIVED_HOOK_WHITELIST[_address];
+            emit TokensReceivedHookWhitelistChange(_address, false);
+        }
     }
 }
