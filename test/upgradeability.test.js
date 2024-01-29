@@ -25,7 +25,8 @@ const getFlattenedContractFromMasterBranch = _ => {
   sed -i ${platform === 'darwin' ? ' \'\' -e' : ''} 's/contract PToken is/contract \
   PTokenMaster is/g' .${CONTRACT_FROM_MASTER_PATH} && \
   cd ../ && \
-  npm run compile`
+  npm run compile && \
+  sleep 1`
 
   return new Promise((resolve, reject) =>
     exec(cmd, { cwd: './' }, (_err, _stdout, _stderr) => _err ? reject(_err) : resolve(_stdout))
