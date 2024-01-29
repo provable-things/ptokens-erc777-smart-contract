@@ -1,5 +1,6 @@
 pragma solidity ^0.6.2;
 
+import {IPReceiver} from "./interfaces/IPReceiver.sol";
 import "./ERC777WithAdminOperatorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -79,6 +80,11 @@ contract PTokenNoGSN is
             "Recipient cannot be the token contract address!"
         );
         _mint(recipient, value, userData, operatorData);
+        if (userData.length > 0) {
+            // TODO: check if this is needed, and, eventually, replace .code with a function
+            // require(recipient.code.length > 0, "Recipient is not a contract");
+            try IPReceiver(recipient).receiveUserData(userData) {} catch {}
+        }
         return true;
     }
 

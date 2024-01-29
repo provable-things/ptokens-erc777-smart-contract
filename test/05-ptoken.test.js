@@ -145,20 +145,40 @@ USE_GSN.map(_useGSN =>
         }
       })
 
-      it('`mint()` w/ data should mint tokens & emit correct events', async () => {
+      it('`mint()` w/ data should revert if receiver is not a contract', async () => {
         const data = '0xdead'
-        const expectedNumEvents = 2
         const operatorData = '0xb33f'
         const recipient = OTHERS[0].address
-        const recipientBalanceBefore = await getTokenBalance(recipient, CONTRACT)
-        const tx = await CONTRACT['mint(address,uint256,bytes,bytes)'](recipient, AMOUNT, data, operatorData)
+        try {
+          const tx = await CONTRACT['mint(address,uint256,bytes,bytes)'](recipient, AMOUNT, data, operatorData)
+          await tx.wait()
+          assert.fail('Should not succeed!')
+        } catch (_err) {
+          const expectedErr = 'Transaction reverted: function call to a non-contract account'
+          assert(_err.message.includes(expectedErr))
+        }
+      })
+
+      it('`mint()` w/ data should mint tokens & emit correct events', async () => {
+        const data = '0xdead'
+        const expectedNumEvents = 3
+        const operatorData = '0xb33f'
+        const recipientContract = await ethers
+          .getContractFactory('PReceiver')
+          .then(_factory => upgrades.deployProxy(_factory))
+
+        const recipientBalanceBefore = await getTokenBalance(recipientContract.address, CONTRACT)
+        const tx =
+          await CONTRACT['mint(address,uint256,bytes,bytes)'](recipientContract.address, AMOUNT, data, operatorData)
         const { events } = await tx.wait()
-        const recipientBalanceAfter = await getTokenBalance(recipient, CONTRACT)
+        const recipientBalanceAfter = await getTokenBalance(recipientContract.address, CONTRACT)
         assert(recipientBalanceBefore.eq(BigNumber.from(0)))
         assert(recipientBalanceAfter.eq(BigNumber.from(AMOUNT)))
         assert.strictEqual(events.length, expectedNumEvents)
-        assertTransferEvent(events, ZERO_ADDRESS, recipient, AMOUNT)
-        assertMintEvent(events, recipient, OWNER.address, AMOUNT, data, operatorData)
+        assertTransferEvent(events, ZERO_ADDRESS, recipientContract.address, AMOUNT)
+        assertMintEvent(events, recipientContract.address, OWNER.address, AMOUNT, data, operatorData)
+        const userDataevent = recipientContract.interface.parseLog(events.at(-1))
+        assert.strictEqual(userDataevent.args.data, data)
       })
 
       it('Should revert when minting tokens with the contract address as the recipient', async () => {
